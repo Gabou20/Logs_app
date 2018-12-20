@@ -43,6 +43,12 @@ class Patrouilleur:
         self.logs.insert(0, self.position)
         self.position = log
 
+    def effacer_dernier_log(self):
+        if len(self.logs) != 0:
+            self.position = self.logs[0]
+            self.position.heure_fin = None
+            self.logs.pop(0)
+
     def convertir_en_chaine(self):
         chaine = "{}\n{},{},{}\n{}\n".format(self.poste, self.agent.convertir_en_chaine(),
                                            self.theme[0], self.theme[1], self.position.convertir_en_chaine())

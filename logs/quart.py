@@ -54,6 +54,8 @@ class Quart:
             bool: True si la position est dans les bornes, False autrement.
 
         """
+        for pat in self.dernier_pat_log:
+            self.id_patrouilleurs[pat].effacer_dernier_log()
 
     def convertir_en_chaine(self):
         """Retourne une chaîne de caractères où chaque case est écrite sur une ligne distincte.

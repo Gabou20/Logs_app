@@ -223,3 +223,31 @@ class Tous_les_logs(Tk):
                                                             message_prise)
             scroll.insert('end', deplacement)
         scroll.grid()
+
+class Message(Tk):
+    """Ouvre une nouvelle fenêtre qui affiche une liste des déplacement effectués jusqu'à maintenant dans la partie.
+    """
+
+    def __init__(self, titre, message):
+        """ Constructeur de la classe Deplacements_effectues. Initialise son argument.
+
+        Arg:
+            fenetre (Tk): fenêtre du jeu de dames
+        """
+        super().__init__()
+        self.resizable(0, 0)
+        #self.config(height=100, width=300)
+        self.title(titre)
+        #self.grid_propagate(0)
+        self.rowconfigure(0, weight=1)
+        self.rowconfigure(2, weight=1)
+        self.rowconfigure(4, weight=1)
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(2, weight=1)
+
+        self.message = Label(self, text=message, font=("Arial", 14))
+        self.message.grid(row=1, column=1, padx=10, pady=10)
+
+        ok = lambda: self.destroy()
+        self.ok = Button(self, text="ok", command=ok, font=("Arial", 15), width=8, bd=2)
+        self.ok.grid(row=3, column=1, padx=10, pady=1)

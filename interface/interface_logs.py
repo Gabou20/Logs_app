@@ -6,7 +6,7 @@ from logs.agent import Agent
 from logs.exceptions import ErreurDeplacement, ErreurPositionCible, ErreurPositionSource, PieceInexistante
 from logs.patrouilleur import Patrouilleur
 from logs.quart import Quart
-from interface.fenetres_supplementaires import Fin_quart, Options, Tous_les_logs
+from interface.fenetres_supplementaires import Fin_quart, Options, Tous_les_logs, Message
 import datetime
 
 class Nouveau_quart(Tk):
@@ -547,7 +547,7 @@ class Fenetre(Tk):
         nouveau_quart = lambda: self.nouveau_quart_quitter()
         sauvegarder_quart = lambda: self.sauvegarder_quart()
         charger_quart = lambda: self.charger_quart()
-        annuler_dernier_log = lambda: self.nouveau_quart_quitter()
+        annuler_dernier_log = lambda: self.annuler_dernier_log()
         logs_effectues = lambda: self.nouveau_quart_quitter()
         options = lambda: self.nouveau_quart_quitter()
 
@@ -605,7 +605,6 @@ class Fenetre(Tk):
                 logs = f.quart.id_patrouilleurs[pat].logs
                 f.quart.id_patrouilleurs[pat].logs = []
                 for log in logs:
-                    print(log.log)
                     f.creer_log_existant(pat, log)
 
         self.destroy()
@@ -622,11 +621,17 @@ class Fenetre(Tk):
         """
         Tous_les_logs()
 
-
-    #def annuler_dernier_log(self):
+    def annuler_dernier_log(self):
         """ Déplace la dernière pièce déplacée à sa position d'origine.
         Si le dernier mouvement était une prise, la pièce prise est redessinée.
         """
+        if self.quart.dernier_pat_log == []:
+            self.afficher_message("Erreur", "Le dernier log a déjà été effacé!")
+        else:
+            self.quart.effacer_dernier_log()
+            for pat in self.quart.dernier_pat_log:
+                self.retirer_dernier_log(pat)
+            self.quart.dernier_pat_log = []
 
     def options(self):
         """ Crée la fenêtre d'options et les cadres et boutons appropriés.
@@ -661,6 +666,29 @@ class Fenetre(Tk):
         self.creer_label_log("-", patrouilleur)
         self.creer_label_log(self.quart.id_patrouilleurs[patrouilleur].logs[0].heure_debut, patrouilleur)
         self.creer_label_log(self.quart.id_patrouilleurs[patrouilleur].logs[0].afficher_log(), patrouilleur)
+
+        colonne = 1
+        ligne = 1
+        for label in self.cadres_patrouilleurs[patrouilleur].labels_logs_precedents:
+            label.grid(row=ligne, column=colonne)
+            colonne += 2
+            if colonne == 9:
+                colonne = 1
+                ligne += 1
+
+    def retirer_dernier_log(self, patrouilleur):
+        #On affiche d'abord la position actuelle dans le cadre prévu à cet effet
+        self.cadres_patrouilleurs[patrouilleur].position_actuelle.config(
+            text=self.quart.id_patrouilleurs[patrouilleur].position.afficher_log())
+        self.cadres_patrouilleurs[patrouilleur].heure_position.config(
+            text=self.quart.id_patrouilleurs[patrouilleur].position.heure_debut)
+
+        #Ensuite on retire le dernier log dans la liste
+        nb_labels = 4
+        while nb_labels != 0:
+            self.cadres_patrouilleurs[patrouilleur].labels_logs_precedents[0].grid_forget()
+            self.cadres_patrouilleurs[patrouilleur].labels_logs_precedents.pop(0)
+            nb_labels -= 1
 
         colonne = 1
         ligne = 1
@@ -707,27 +735,12 @@ class Fenetre(Tk):
             #self.canvas_damier.dessiner_pieces()
             #self.afficher_couleur_courante()
 
-    def afficher_message(self, message, couleur):
+    def afficher_message(self, titre, message):
         """Affiche un message d'une certaine couleur en-dessous du damier.
 
         Arg:
             message: le message à afficher
             couleur: la couleur du texte du message
         """
-        self.messages['foreground'] = couleur
-        self.messages['text'] = message
+        Message(titre, message)
 
-    def afficher_erreur(self, message_erreur):
-        """Affiche en rouge un message d'erreur en-dessous du damier.
-
-        Arg:
-            message_erreur: le message d'erreur à afficher
-        """
-        self.afficher_message("Erreur: {}.".format(message_erreur), 'red')
-
-    """def jouer(self):
-        Nouveau mouvement si le jeu n'est pas en attente d'un clic.
-
-        if not self.attente_clic:
-            self.mouvement()
-    """
