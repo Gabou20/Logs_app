@@ -14,7 +14,7 @@ class Log:
 
     """
 
-    def __init__(self, heure_debut, heure_fin, terminal_exterieur, cote, log):
+    def __init__(self, heure_debut=None, heure_fin=None, terminal_exterieur=None, cote=None, log=None):
         """Constructeur de la classe Log. Initialise les cinq attributs de la classe.
 
         Args:
@@ -42,3 +42,12 @@ class Log:
 
         texte += self.log
         return texte
+
+    def convertir_en_chaine(self):
+        chaine = "{},{},{},{},{}".format(self.heure_debut, self.heure_fin,
+                                            self.terminal_exterieur, self.cote, self.log)
+
+        return chaine
+
+    def charger_dune_chaine(self, chaine):
+        self.heure_debut, self.heure_fin, self.terminal_exterieur, self.cote, self.log = chaine.split(",")

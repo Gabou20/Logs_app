@@ -81,69 +81,9 @@ class Agent:
         if not (deplacement_valide or saut_valide):
             raise ErreurPositionCible("Position cible invalide")
 
-    def sauvegarder(self, nom_fichier):
-        """Sauvegarde une partie dans un fichier. Le fichier contiendra:
-        - Une ligne indiquant la couleur du joueur courant.
-        - Une ligne contenant True ou False, si le joueur courant doit absolument effectuer une prise à son tour.
-        - Une ligne contenant None si self.position_source_forcee est à None, et la position ligne,colonne autrement.
-        - Le reste des lignes correspondent au damier. Voir la méthode convertir_en_chaine du damier pour le format.
+    def convertir_en_chaine(self):
+        chaine = "{},{},{}".format(self.nom, self.titre, self.indicatif)
 
-        Warning:
-            Lorsqu'on écrit ou lit dans un fichier texte, il faut s'assurer de bien convertir les variables
-            dans le bon type.
+        return chaine
 
-        Exemple de contenu de fichier :
-
-        blanc
-        True
-        6,1
-        1,2,noir,dame
-        1,6,blanc,pion
-        4,1,noir,dame
-        5,2,noir,pion
-        6,1,blanc,dame
-
-
-        Args:
-            nom_fichier (str): Le nom du fichier où sauvegarder.
-
-        """
-        with open(nom_fichier, "w") as f:
-            f.write("{}\n".format(self.couleur_joueur_courant))
-            f.write("{}\n".format(self.doit_prendre))
-            f.write("{}\n".format(self.damier.n_lignes))
-            f.write("{}\n".format(self.damier.n_colonnes))
-            f.write("{}\n".format(self.damier.n_rangees))
-            if self.position_source_forcee is not None:
-                f.write("{},{}\n".format(self.position_source_forcee.ligne, self.position_source_forcee.colonne))
-            else:
-                f.write("None\n")
-            f.writelines(self.damier.convertir_en_chaine())
-
-    #def charger(self, nom_fichier):
-        """Charge une partie à partir d'un fichier. Le fichier a le même format que la méthode de sauvegarde.
-
-        Warning: N'oubliez pas de bien convertir les chaînes de caractères lues!
-
-        Args:
-            nom_fichier (str): Le nom du fichier à lire.
-
-    
-        with open(nom_fichier) as f:
-            self.couleur_joueur_courant = f.readline().rstrip("\n")
-            doit_prendre_string = f.readline().rstrip("\n")
-            dimensions = [f.readline(), f.readline(), f.readline()]
-            if doit_prendre_string == "True":
-                self.doit_prendre = True
-            else:
-                self.doit_prendre = False
-
-            position_string = f.readline().rstrip("\n")
-            if position_string == "None":
-                self.position_source_forcee = None
-            else:
-                ligne_string, colonne_string = position_string.split(",")
-                self.position_source_forcee = Position(int(ligne_string), int(colonne_string))
-
-            self.damier.charger_dune_chaine(f.read())
-        """
+    #def charger_dune_chaine(self, chaine):

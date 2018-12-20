@@ -72,9 +72,13 @@ class Quart:
             (str): La chaîne de caractères construite.
 
         """
-        chaine = ""
-        for position, piece in self.cases.items():
-            chaine += "{},{},{},{}\n".format(position.ligne, position.colonne, piece.couleur, piece.type_de_piece)
+        chaine = "{},{},{}\n".format(self.nb_patrouilleurs,
+                                     self.id_lieutenant.convertir_en_chaine(),
+                                     self.dernier_pat_log)
+
+        for patrouilleur in self.id_patrouilleurs.values():
+            if patrouilleur is not None:
+                chaine += patrouilleur.convertir_en_chaine()
 
         return chaine
 
@@ -84,12 +88,48 @@ class Quart:
 
         Args:
             chaine (str): La chaîne de caractères.
+        """
+        numero_de_ligne = 0
+        patrouilleur = False
+        for information_quart in chaine.split("\n"):
+            if information_quart in ["204", "205", "206", "207"]:
+                numero_de_ligne = 1
+                poste = information_quart
+                patrouilleur = True
+            if information_quart != "":
+                if numero_de_ligne == 0:
+                    nb_patrouilleurs, nom_lieutenant, titre_lieutenant, indicatif_lieutenant, \
+                    self.dernier_pat_log = information_quart.split(",")
+                    self.nb_patrouilleurs = int(nb_patrouilleurs)
+                elif patrouilleur:
+                    if numero_de_ligne == 2:
+                        nom, titre, indicatif, couleur1, couleur2 = information_quart.split(",")
+                        self.id_patrouilleurs[poste] = \
+                            Patrouilleur(Agent(nom, titre, indicatif), poste, [couleur1, couleur2])
+                    elif numero_de_ligne != 1:
+                        nouveau_log = Log()
+                        nouveau_log.charger_dune_chaine(information_quart)
+                        self.id_patrouilleurs[poste].logs.insert(0, nouveau_log)
+            numero_de_ligne += 1
 
+        self.id_lieutenant = Agent(nom_lieutenant, titre_lieutenant, indicatif_lieutenant)
+        for pat in self.id_patrouilleurs:
+            if self.id_patrouilleurs[pat] is not None:
+                self.id_patrouilleurs[pat].position = self.id_patrouilleurs[pat].logs[0]
+                self.id_patrouilleurs[pat].logs.pop(0)
 
-        self.clear()
-        for information_piece in chaine.split("\n"):
-            if information_piece != "":
-                ligne_string, colonne_string, couleur, type_piece = information_piece.split(",")
-                self.cases[Position(int(ligne_string), int(colonne_string))] = Piece(couleur, type_piece)
-                """
+    def sauvegarder(self, nom_fichier):
+        """Sauvegarde une partie dans un fichier. Le fichier contiendra:
+        - Une ligne indiquant la couleur du joueur courant.
+        - Une ligne contenant True ou False, si le joueur courant doit absolument effectuer une prise à son tour.
+        - Une ligne contenant None si self.position_source_forcee est à None, et la position ligne,colonne autrement.
+        - Le reste des lignes correspondent au damier. Voir la méthode convertir_en_chaine du damier pour le format.
 
+        Exemple de contenu de fichier :
+
+        Args:
+            nom_fichier (str): Le nom du fichier où sauvegarder.
+
+        """
+        with open(nom_fichier, "w") as f:
+            f.writelines(self.convertir_en_chaine())

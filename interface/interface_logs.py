@@ -29,28 +29,28 @@ class Nouveau_quart(Tk):
 
         if self.actif_204:
             agent_204 = Agent(nom_204, titre_204, indicatif_204)
-            patrouilleur_204 = Patrouilleur(agent_204, 204, "yellow2", "yellow3")
+            patrouilleur_204 = Patrouilleur(agent_204, "204", ["yellow2", "yellow3"])
             nb_pat += 1
         else:
             patrouilleur_204 = None
 
         if self.actif_205:
             agent_205 = Agent(nom_205, titre_205, indicatif_205)
-            patrouilleur_205 = Patrouilleur(agent_205, 205, "IndianRed2", "IndianRed3")
+            patrouilleur_205 = Patrouilleur(agent_205, "205", ["IndianRed2", "IndianRed3"])
             nb_pat += 1
         else:
             patrouilleur_205 = None
 
         if self.actif_206:
             agent_206 = Agent(nom_206, titre_206, indicatif_206)
-            patrouilleur_206 = Patrouilleur(agent_206, 206, "DodgerBlue2", "DodgerBlue3")
+            patrouilleur_206 = Patrouilleur(agent_206, "206", ["DodgerBlue2", "DodgerBlue3"])
             nb_pat += 1
         else:
             patrouilleur_206 = None
 
         if self.actif_207:
             agent_207 = Agent(nom_207, titre_207, indicatif_207)
-            patrouilleur_207 = Patrouilleur(agent_207, 207, "Chartreuse3", "Chartreuse4")
+            patrouilleur_207 = Patrouilleur(agent_207, "207", ["Chartreuse3", "Chartreuse4"])
             nb_pat += 1
         else:
             patrouilleur_207 = None
@@ -304,6 +304,7 @@ class CadreLogs:
         self.cadre.grid(row=4, column=nb_patrouilleurs+1, sticky=NSEW)
         self.cadre_parent.columnconfigure(nb_patrouilleurs+2, weight=1)
         self.fenetre = fenetre
+        self.types_logs = ["logs_terminal", "logs_exterieur_piste", "logs_exterieur_ville"]
 
         self.valeur_boutons = {
             "patrouilleurs": [],
@@ -315,22 +316,27 @@ class CadreLogs:
             "patrouilleurs": Frame(self.cadre, height=hauteur, width=largeur, relief="groove", bd=1),
             "terminal_exterieur": Frame(self.cadre, height=hauteur, width=largeur, relief="groove", bd=1),
             "cote": Frame(self.cadre, height=hauteur, width=largeur, relief="groove", bd=1),
-            "logs": Frame(self.cadre, height=hauteur*5.3, width=largeur, relief="groove", bd=1)
+            "logs_terminal": Frame(self.cadre, height=hauteur*5.3, width=largeur, relief="groove", bd=1),
+            "logs_exterieur_ville": Frame(self.cadre, height=hauteur * 5.3, width=largeur, relief="groove", bd=1),
+            "logs_exterieur_piste": Frame(self.cadre, height=hauteur * 5.3, width=largeur, relief="groove", bd=1)
         }
 
         self.boutons_par_section = {
             "patrouilleurs": {},
             "terminal_exterieur": {},
             "cote": {},
-            "logs": {}
+            "logs_terminal": {},
+            "logs_exterieur_ville": {},
+            "logs_exterieur_piste": {}
         }
+
         self.logs_par_section = {
-            "terminal": ["Patrouille", "Intervention", "Ronde niveau 0",
+            "logs_terminal": ["Patrouille", "Intervention", "Ronde niveau 0",
                          "Ronde niveaux 1-2", "Ronde stat. étagé",
                          "Vol non fouillé", "Vol international"],
-            "exterieur_ville": ["Patrouille", "Intervention", "Ronde stationnements", "Ronde barrières",
+            "logs_exterieur_ville": ["Patrouille", "Intervention", "Ronde stationnements", "Ronde barrières",
                                 "Opération CSR", "Interception", "Constat d'infraction"],
-            "exterieur_piste": ["Patrouille", "Intervention", "Opération DCZR/DAZR", "Ronde périmètre", "Infraction"]
+            "logs_exterieur_piste": ["Patrouille", "Intervention", "Opération DCZR/DAZR", "Ronde périmètre", "Infraction"]
         }
 
         #Création boutons patrouilleurs
@@ -356,19 +362,23 @@ class CadreLogs:
 
         self.repartir_boutons("cote")
 
+        #Création des boutons de logs : 3 cadres différents avec des boutons différents
+        for type in self.types_logs:
+            self.creation_boutons_logs(type)
+
     def repartir_boutons(self, section):
         colonne = 1
         col_log = 1
         par_deux = 0
         self.cadres_par_section[section].grid_columnconfigure(0, weight=1)
         self.cadres_par_section[section].grid_rowconfigure(0, weight=1)
-        if section == "logs":
+        if section in self.types_logs:
             self.cadres_par_section[section].grid_columnconfigure(2, weight=1)
             self.cadres_par_section[section].grid_columnconfigure(4, weight=1)
 
         for nom in sorted(self.boutons_par_section[section]):
             bouton = self.boutons_par_section[section][nom]
-            if section == "logs":
+            if section in self.types_logs:
                 bouton.grid(row=par_deux+1, column=col_log, padx=10, pady=10)
                 if col_log == 1:
                     col_log = 3
@@ -383,17 +393,29 @@ class CadreLogs:
             colonne += 2
         self.cadres_par_section[section].grid_rowconfigure(par_deux + 2, weight=1)
 
+    def choisir_section_log(self):
+        section = ""
+        if self.valeur_boutons["terminal_exterieur"] == "Terminal":
+            section = "logs_terminal"
+        elif self.valeur_boutons["terminal_exterieur"] == "Exterieur" and self.valeur_boutons["cote"] == "Piste":
+            section = "logs_exterieur_piste"
+        else:
+            section = "logs_exterieur_ville"
+
+        return section
+
     #Affichage d'une section de boutons
     def afficher_section(self, section):
-        sections = ["patrouilleurs", "terminal_exterieur", "cote", "logs"]
+        if section == "logs":
+            section = self.choisir_section_log()
+        sections = ["patrouilleurs", "terminal_exterieur", "cote"] + self.types_logs
         self.cadres_par_section[section].grid(row=sections.index(section), column=0, sticky=NSEW)
         self.cadres_par_section[section].grid_propagate(0)
 
     def creation_boutons_logs(self, type_logs):
         for log in self.logs_par_section[type_logs]:
-            self.boutons_par_section["logs"][log] = self.creer_bouton_log(log, "logs")
-        self.repartir_boutons("logs")
-        self.afficher_section("logs")
+            self.boutons_par_section[type_logs][log] = self.creer_bouton_log(log, type_logs)
+        self.repartir_boutons(type_logs)
 
     def updater_boutons(self, bouton, section):
         #On commence par enfoncer (ou désenfoncer) le bon bouton et mettre à jour les valeurs
@@ -422,16 +444,9 @@ class CadreLogs:
             self.all_clear("cote")
 
         #Ensuite on ajuste les sections à afficher selon les valeurs courantes
-        if section != "logs":
-            self.cacher_section("logs")
-            self.boutons_par_section["logs"] = {}
-            if self.valeur_boutons["terminal_exterieur"] == "Terminal":
-                self.creation_boutons_logs("terminal")
-            elif self.valeur_boutons["terminal_exterieur"] == "Exterieur" and self.valeur_boutons["cote"] == "Piste":
-                self.creation_boutons_logs("exterieur_piste")
-            elif self.valeur_boutons["terminal_exterieur"] == "Exterieur" and self.valeur_boutons["cote"] == "Ville":
-                self.creation_boutons_logs("exterieur_ville")
 
+        if section not in self.types_logs:
+            self.cacher_section("logs")
             self.afficher_section("logs")
 
         else:
@@ -455,7 +470,11 @@ class CadreLogs:
         if section != "logs":
             self.valeur_boutons[section] = None
             self.all_clear(section)
-        self.cadres_par_section[section].grid_forget()
+            self.cadres_par_section[section].grid_forget()
+        else:
+            for section_log in self.types_logs:
+                self.cadres_par_section[section_log].grid_forget()
+
 
     def all_clear(self, section):
         for bouton in self.boutons_par_section[section].values():
@@ -472,7 +491,7 @@ class CadreLogs:
         appuyer = lambda: self.updater_boutons(caption, section)
         if section == "patrouilleurs":
             largeur = 5
-        if section == "logs":
+        if section in self.types_logs:
             largeur = 20
         return Button(self.cadres_par_section[section], text=caption, font=("Arial", 14, "bold"),
                       height=1, width=largeur, bd=3, relief="raised", bg="gray70", command=appuyer)
@@ -503,7 +522,8 @@ class Fenetre(Tk):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
         self.resizable(0, 0)
-        #self.config(height=800)
+        self.config(height=565, width=largeur)
+        self.grid_propagate(0)
         self.cadre_quart = Frame(self, height=555, width=largeur)
         self.cadre_quart.grid(columnspan=2, row=0, column=1, padx=5, pady=5)
         self.cadre_quart.grid_propagate(0)
@@ -525,8 +545,8 @@ class Fenetre(Tk):
         menu_jeu = Menu(self)
         menu_principal = Menu(menu_jeu, tearoff=0)
         nouveau_quart = lambda: self.nouveau_quart_quitter()
-        sauvegarder_quart = lambda: self.nouveau_quart_quitter()
-        charger_quart = lambda: self.nouveau_quart_quitter()
+        sauvegarder_quart = lambda: self.sauvegarder_quart()
+        charger_quart = lambda: self.charger_quart()
         annuler_dernier_log = lambda: self.nouveau_quart_quitter()
         logs_effectues = lambda: self.nouveau_quart_quitter()
         options = lambda: self.nouveau_quart_quitter()
@@ -559,8 +579,8 @@ class Fenetre(Tk):
             if self.quart.id_patrouilleurs[pat] is not None:
                 self.cadres_patrouilleurs[pat] = CadrePatrouilleur(colonne, cadre_quart, pat,
                                                                    self.quart.id_patrouilleurs[pat].agent,
-                                                                   self.quart.id_patrouilleurs[pat].couleur1,
-                                                                   self.quart.id_patrouilleurs[pat].couleur2)
+                                                                   self.quart.id_patrouilleurs[pat].theme[0],
+                                                                   self.quart.id_patrouilleurs[pat].theme[1])
                 colonne += 1
 
     def dessiner_boutons_cote(self, cadre):
@@ -578,8 +598,18 @@ class Fenetre(Tk):
         """ Initialise une fenêtre de nouveau quart avec les attributs de quart courant.
         """
 
-        self.attente_clic = True
-        self.canvas_damier.grid_forget()
+        f = Fenetre(self.quart)
+
+        for pat in f.quart.id_patrouilleurs:
+            if f.quart.id_patrouilleurs[pat] is not None:
+                logs = f.quart.id_patrouilleurs[pat].logs
+                f.quart.id_patrouilleurs[pat].logs = []
+                for log in logs:
+                    print(log.log)
+                    f.creer_log_existant(pat, log)
+
+        self.destroy()
+
         #self.canvas_damier = CanvasDamier(self, 60, self.partie.damier)
         #self.canvas_damier.bind('<Button-1>', self.cliquer)
         #self.canvas_damier.grid(row=0, column=0, sticky=NSEW)
@@ -614,6 +644,11 @@ class Fenetre(Tk):
             self.afficher_logs(pat)
         self.quart.dernier_pat_log = patrouilleurs
 
+    def creer_log_existant(self, patrouilleur, log):
+        self.quart.id_patrouilleurs[patrouilleur].nouveau_log(log)
+        self.afficher_logs(patrouilleur)
+        self.quart.dernier_pat_log = [patrouilleur]
+
     def afficher_logs(self, patrouilleur):
         #On affiche d'abord la position actuelle dans le cadre prévu à cet effet
         self.cadres_patrouilleurs[patrouilleur].position_actuelle.config(
@@ -640,7 +675,7 @@ class Fenetre(Tk):
         self.cadres_patrouilleurs[patrouilleur].labels_logs_precedents.insert(0, Label(
             self.cadres_patrouilleurs[patrouilleur].cadre_logs,
             text=texte,
-            bg=self.quart.id_patrouilleurs[patrouilleur].couleur2,
+            bg=self.quart.id_patrouilleurs[patrouilleur].theme[1],
             font=("Arial", 12)))
 
     def sauvegarder_quart(self):
@@ -656,19 +691,21 @@ class Fenetre(Tk):
         fichier = filedialog.askopenfilename(defaultextension='txt', title='Charger une partie')
         if fichier != "":
             f = open(fichier, 'r')
-            f.readline()
-            f.readline()
-            dimensions = [int(f.readline()), int(f.readline()), int(f.readline())]
-            self.nouvelle_partie(dimensions[0], dimensions[1], dimensions[2], self.delai,
-                                 self.nom_joueur_blanc, self.nom_joueur_noir, self.afficher_sources)
-            self.partie.charger(fichier)
-            self.partie.damier.liste_mouvements = []
-            self.attente_clic = True
-            self.nombre_prises_par_tour = [0]
-            self.partie.numero_tour = 0
-            self.canvas_damier.delete(self, 'piece')
-            self.canvas_damier.dessiner_pieces()
-            self.afficher_couleur_courante()
+            self.quart.charger_dune_chaine(f.read())
+            self.nouveau_quart_quitter()
+
+            #f.readline()
+            #dimensions = [int(f.readline()), int(f.readline()), int(f.readline())]
+            #self.nouvelle_partie(dimensions[0], dimensions[1], dimensions[2], self.delai,
+                                 #self.nom_joueur_blanc, self.nom_joueur_noir, self.afficher_sources)
+            #self.partie.charger(fichier)
+            #self.partie.damier.liste_mouvements = []
+            #self.attente_clic = True
+            #self.nombre_prises_par_tour = [0]
+            #self.partie.numero_tour = 0
+            #self.canvas_damier.delete(self, 'piece')
+            #self.canvas_damier.dessiner_pieces()
+            #self.afficher_couleur_courante()
 
     def afficher_message(self, message, couleur):
         """Affiche un message d'une certaine couleur en-dessous du damier.
