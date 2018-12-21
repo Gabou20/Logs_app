@@ -1,6 +1,6 @@
 __author__ = 'Gabrielle Martin-Fortier'
 
-from tkinter import Tk, Canvas, Label, Entry, Checkbutton, Button, W, N, Listbox, Frame, NSEW, S, Menu, filedialog
+from tkinter import Tk, Label, Entry, Checkbutton, Button, W, N, Listbox, Frame, NSEW, Menu, filedialog, Radiobutton, StringVar
 from logs.log import Log
 from logs.agent import Agent
 from logs.exceptions import ErreurDeplacement, ErreurPositionCible, ErreurPositionSource, PieceInexistante
@@ -14,27 +14,86 @@ class Cadre_nouveau_patrouilleur(Frame):
         #Création objets
         self.cadre = Frame(cadre_parent, bd=3, relief='ridge')
 
-        label_pat = Label(self.cadre, text="Patrouilleur "+patrouilleur)
-        bouton = Checkbutton(self.cadre, command=commande)
-        label_nom = Label(self.cadre, text="Nom : ")
+        self.couleurs_possibles = {
+            "rouge": ["Indianred2", "IndianRed3"],
+            "jaune": ["yellow2", "yellow3"],
+            "bleu": ["DodgerBlue2", "DodgerBlue3"],
+            "vert": ["chartreuse2", "chartreuse3"],
+            "mauve": ["DarkOrchid2", "DarkOrchid"],
+            "rose": ["maroon1", "maroon3"],
+            "gris": ["light grey", "gray60"],
+            "orange": ["DarkOrange2", "DarkOrange3"],
+            "blanc": ["snow", "snow3"]
+        }
+
+        self.boutons_couleurs = {
+            "rouge": None,
+            "jaune": None,
+            "bleu": None,
+            "vert": None,
+            "mauve": None,
+            "rose": None,
+            "gris": None,
+            "orange": None,
+            "blanc": None
+        }
+
+        self.cadre_pat = Frame(self.cadre)
+        label_pat = Label(self.cadre_pat, text="Patrouilleur "+patrouilleur)
+        bouton = Checkbutton(self.cadre_pat, command=commande)
+        label_nom = Label(self.cadre, text=" Nom : ")
         self.entree_nom = Entry(self.cadre, width=20)
-        label_titre = Label(self.cadre, text="Titre : ")
+        label_titre = Label(self.cadre, text="  Titre : ")
         self.entree_titre = Listbox(self.cadre, height=3, exportselection=0)
         for item in ["Lieutenant(e)", "Sergent(e)", "Agent(e)"]:
             self.entree_titre.insert(0, item)
         self.entree_titre.select_set(0)
         label_indicatif = Label(self.cadre, text="Indicatif : ")
         self.entree_indicatif = Entry(self.cadre, width=20)
+        self.cadre_couleurs = Frame(self.cadre)
+        self.valeur_couleur = StringVar()
+        self.valeur_couleur.set("rouge")
+        for couleur in self.couleurs_possibles:
+            self.boutons_couleurs[couleur] = Radiobutton(self.cadre_couleurs, bg=self.couleurs_possibles[couleur][0],
+                                                         selectcolor=self.couleurs_possibles[couleur][0],
+                                                         variable=self.valeur_couleur, value=couleur, bd=2,
+                                                         indicatoron=0, width=2)
+
+        numero = 0
+        while numero < 19:
+            self.cadre_couleurs.columnconfigure(0, weight=1)
+            numero += 2
+
+        numero = 0
+        while numero < 5:
+            self.cadre.columnconfigure(numero, weight=1)
+            self.cadre.rowconfigure(numero, weight=1)
+            numero += 2
+        self.cadre.rowconfigure(6, weight=1)
+
+        self.cadre_pat.columnconfigure(0, weight=1)
+        self.cadre_pat.columnconfigure(2, weight=1)
+        self.cadre_pat.columnconfigure(4, weight=1)
+        self.cadre_pat.rowconfigure(0, weight=1)
+        self.cadre_pat.rowconfigure(2, weight=1)
 
         self.cadre.grid(row=1, column=colonne, sticky=W, padx=5, pady=5)
-        label_pat.grid(columnspan=4, row=0, column=1)
-        bouton.grid(row=0, column=5, sticky=W, padx=5, pady=5)
-        self.entree_nom.grid(columnspan=4, row=3, column=3, padx=5, pady=5)
-        label_nom.grid(columnspan=2, row=3, column=0, sticky=W, padx=5, pady=5)
-        label_titre.grid(row=5, column=0)
-        self.entree_titre.grid(rowspan=3, columnspan=4, row=4, column=3, padx=5, pady=5)
-        label_indicatif.grid(columnspan=3, row=7, column=0, sticky=W, padx=5, pady=5)
-        self.entree_indicatif.grid(columnspan=3, row=7, column=3, padx=5, pady=5)
+        self.cadre_couleurs.grid(columnspan=5, row=8, column=1)
+        self.cadre_pat.grid(columnspan=5, row=0, column=1)
+
+        label_pat.grid(row=1, column=1, sticky=W)
+        bouton.grid(row=1, column=3, sticky=W, padx=5, pady=5)
+        self.entree_nom.grid(row=3, column=3, padx=5, pady=5, sticky=W)
+        label_nom.grid(row=3, column=1, sticky=W, padx=5, pady=5)
+        label_titre.grid(row=5, column=1, sticky=W)
+        self.entree_titre.grid(row=5, column=3, padx=5, pady=5, sticky=W)
+        label_indicatif.grid(row=7, column=1, sticky=W, padx=5, pady=5)
+        self.entree_indicatif.grid(row=7, column=3, padx=5, pady=5, sticky=W)
+        colonne = 1
+        for couleur in self.boutons_couleurs:
+            self.boutons_couleurs[couleur].grid(row=8, column=colonne, padx=2, pady=2)
+            colonne += 2
+
 
 class Nouveau_quart(Tk):
     """ Crée la fenêtre demandant les informations pour créer un nouveau quart.
@@ -68,42 +127,71 @@ class Nouveau_quart(Tk):
             "206": False,
             "207": False
         }
-        self.couleurs_patrouilleurs = {
-            "204": ["yellow2", "yellow3"],
-            "205": ["DodgerBlue2", "DodgerBlue3"],
-            "206": ["IndianRed2", "IndianRed3"],
-            "207": ["chartreuse3", "chartreuse4"]
+
+        self.couleurs_possibles = {
+            "rouge": ["Indianred2", "IndianRed3"],
+            "jaune": ["yellow2", "yellow3"],
+            "bleu": ["DodgerBlue2", "DodgerBlue3"],
+            "vert": ["chartreuse2", "chartreuse3"],
+            "mauve": ["DarkOrchid2", "DarkOrchid"],
+            "rose": ["maroon1", "maroon3"],
+            "gris": ["light grey", "gray60"],
+            "orange": ["DarkOrange2", "DarkOrange3"],
+            "blanc": ["snow", "snow3"]
         }
 
+        self.boutons_couleurs = {
+            "rouge": None,
+            "jaune": None,
+            "bleu": None,
+            "vert": None,
+            "mauve": None,
+            "rose": None,
+            "gris": None,
+            "orange": None,
+            "blanc": None
+        }
 
         self.cadre_nouveau_quart.grid(row=0, padx=5, pady=5)
-        self.cadre_nouveau_quart.columnconfigure(0, weight=1)
-        self.cadre_nouveau_quart.columnconfigure(2, weight=1)
 
         # Lieutenant
-        cadre_lieutenant = Frame(self, bd=3, relief='ridge')
+        cadre_lieutenant = Frame(self.cadre_nouveau_quart, bd=3, relief='ridge')
         label_lieutenant = Label(cadre_lieutenant, text="Lieutenant")
         label_nom_lieutenant = Label(cadre_lieutenant, text="Nom : ")
         self.entree_nom_lieutenant = Entry(cadre_lieutenant, width=20)
         label_indicatif_lieutenant = Label(cadre_lieutenant, text="Indicatif : ")
         self.entree_indicatif_lieutenant = Entry(cadre_lieutenant, width=20)
+        cadre_couleurs = Frame(cadre_lieutenant)
+        self.valeur_couleur = StringVar()
+        self.valeur_couleur.set("gris")
+        for couleur in self.couleurs_possibles:
+            self.boutons_couleurs[couleur] = Radiobutton(cadre_couleurs, bg=self.couleurs_possibles[couleur][0],
+                                                         selectcolor=self.couleurs_possibles[couleur][0],
+                                                         variable=self.valeur_couleur, value=couleur, bd=2,
+                                                         indicatoron=0, width=2)
 
-        cadre_lieutenant.grid(columnspan=2, row=0, column=1, padx=5, pady=5)
+        cadre_lieutenant.grid(columnspan=4, row=0, column=0, padx=5, pady=5)
         label_lieutenant.grid(columnspan=3, row=0, column=2, padx=5, pady=5, sticky=W)
         label_nom_lieutenant.grid(columnspan=2, row=1, column=0, sticky=W, padx=5, pady=5)
         self.entree_nom_lieutenant.grid(columnspan=4, row=1, column=2, padx=5, pady=5)
         label_indicatif_lieutenant.grid(columnspan=2, row=2, column=0, sticky=W, padx=5, pady=5)
         self.entree_indicatif_lieutenant.grid(columnspan=3, row=2, column=3, padx=5, pady=5)
+        cadre_couleurs.grid(row=3, column=0, columnspan=5)
 
-        cadre_bouton = Frame(self)
-        cadre_bouton.grid(columnspan=2, row=3, column=1, sticky=W)
+        numero = 0
+        while numero < 19:
+            cadre_couleurs.columnconfigure(0, weight=1)
+            numero += 2
+
+        colonne = 1
+        for couleur in self.boutons_couleurs:
+            self.boutons_couleurs[couleur].grid(row=8, column=colonne, padx=2, pady=2)
+            colonne += 2
+
+        cadre_bouton = Frame(self.cadre_nouveau_quart)
+        cadre_bouton.grid(columnspan=4, row=3, column=0)
         bouton_ok = Button(cadre_bouton, text="Nouveau quart", command=self.nouvelle_fenetre_quart, width=60)
         bouton_ok.grid(padx=5, pady=5, sticky=W)
-
-        # annuler = lambda: self.annuler(self, jouer_contre_ordinateur_avant, afficher_sources_avant,
-        # afficher_cibles_avant)
-        # bouton_annuler = Button(cadre_boutons, text="Annuler", command=annuler)
-        # bouton_annuler.grid(row=6, column=2, padx=5, pady=5, sticky=E)
 
     def nouvelle_fenetre_quart(self):
         nb_pat = 0
@@ -113,23 +201,36 @@ class Nouveau_quart(Tk):
             "206": None,
             "207": None
         }
-        lieutenant = Agent(self.entree_nom_lieutenant.get(), "Lieutenant", self.entree_indicatif_lieutenant.get())
+        lieutenant = Agent(self.entree_nom_lieutenant.get(), "Lieutenant(e)", self.entree_indicatif_lieutenant.get())
 
         for pat in self.patrouilleurs_actifs:
             if self.patrouilleurs_actifs[pat]:
                 agent = Agent(self.cadres_patrouilleurs[pat].entree_nom.get(), self.cadres_patrouilleurs[pat].entree_titre.get(self.cadres_patrouilleurs[pat].entree_titre.curselection()), self.cadres_patrouilleurs[pat].entree_indicatif.get())
-                patrouilleurs[pat] = Patrouilleur(agent, pat, self.couleurs_patrouilleurs[pat])
+                patrouilleurs[pat] = Patrouilleur(agent, pat, self.couleurs_possibles[self.cadres_patrouilleurs[pat].valeur_couleur.get()])
                 nb_pat += 1
-
-        quart = Quart(lieutenant, nb_pat, patrouilleurs["204"], patrouilleurs["205"], patrouilleurs["206"], patrouilleurs["207"])
-        Fenetre(quart)
-        self.destroy()
+        if nb_pat == 0:
+            self.afficher_message("Aucun patrouilleur!", "Il doit y avoir au moins un patrouilleur.")
+        else:
+            quart = Quart(lieutenant, self.couleurs_possibles[self.valeur_couleur.get()][1],
+                        nb_pat, patrouilleurs["204"], patrouilleurs["205"], patrouilleurs["206"], patrouilleurs["207"])
+            Fenetre(quart)
+            self.destroy()
 
     def options_dans_attributs(self, patrouilleur):
         if self.patrouilleurs_actifs[patrouilleur]:
             self.patrouilleurs_actifs[patrouilleur] = False
         else:
             self.patrouilleurs_actifs[patrouilleur] = True
+
+    def afficher_message(self, titre, message):
+        """Affiche un message d'une certaine couleur en-dessous du damier.
+
+        Arg:
+            message: le message à afficher
+            couleur: la couleur du texte du message
+        """
+        Message(titre, message)
+
 
 class CadrePatrouilleur(Frame):
     def __init__(self, colonne, cadre_parent, poste, agent, couleur1, couleur2):
@@ -184,6 +285,7 @@ class CadrePatrouilleur(Frame):
 
         self.position_actuelle.grid(row=1, column=1, padx=5, pady=5)
         self.heure_position.grid(row=1, column=3, padx=5, pady=5)
+
 
 class CadreLogs:
     def __init__(self, fenetre, cadre_parent, nb_patrouilleurs):
@@ -356,8 +458,6 @@ class CadreLogs:
             self.cacher_section("logs")
             self.boutons_par_section["logs"] = {}
 
-        print(self.valeur_boutons)
-
     def cacher_section(self, section):
         if section != "logs":
             self.valeur_boutons[section] = None
@@ -409,6 +509,10 @@ class Fenetre(Tk):
         super().__init__()
         #Quart courant
         self.quart = quart
+        if self.quart.nb_patrouilleurs == 0:
+            self.afficher_message("Aucun patrouilleur!", "Vous n'avez ajouté aucun patrouilleur!")
+            Nouveau_quart()
+            #self.destroy()
         largeur = 600 + self.quart.nb_patrouilleurs*400
         self.title("Gestion des logs")
         self.grid_columnconfigure(0, weight=1)
@@ -430,7 +534,7 @@ class Fenetre(Tk):
 
         # Création des cadres pour les patrouilleurs
         self.dessiner_cadres(self.cadre_quart)
-
+        #Et pour les boutons
         self.cadre_logs = CadreLogs(self, self.cadre_quart, self.quart.nb_patrouilleurs)
 
         # On crée le menu
@@ -456,12 +560,12 @@ class Fenetre(Tk):
     def dessiner_cadres(self, cadre_quart):
         """Initialise un quart avec les cadres pour chaque patrouilleur. Dépend du nombre de patrouilleurs.
         """
-        cadre_lieutenant = Frame(cadre_quart, bd=3, relief='ridge', bg="gray40")
-        label_lieutenant = Label(cadre_lieutenant, text="Lieutenant : ", bg="gray40", font=("Arial", 14, "bold"))
-        label_nom_lieutenant = Label(cadre_lieutenant, text=self.quart.id_lieutenant.nom, bg="gray40", font=("Arial", 14, "bold"))
-        label_indicatif = Label(cadre_lieutenant, text=self.quart.id_lieutenant.indicatif, bg="gray40", font=("Arial", 14, "bold"))
-
-        cadre_lieutenant.grid(row=0, padx=10, pady=10)
+        cadre_lieutenant = Frame(cadre_quart, bd=3, relief='ridge', bg=self.quart.couleur_lieutenant)
+        label_lieutenant = Label(cadre_lieutenant, text="Lieutenant(e) : ", bg=self.quart.couleur_lieutenant, font=("Arial", 14, "bold"))
+        label_nom_lieutenant = Label(cadre_lieutenant, text=self.quart.id_lieutenant.nom, bg=self.quart.couleur_lieutenant, font=("Arial", 14, "bold"))
+        label_indicatif = Label(cadre_lieutenant, text=self.quart.id_lieutenant.indicatif, bg=self.quart.couleur_lieutenant, font=("Arial", 14, "bold"))
+        if self.quart.nb_patrouilleurs !=0:
+            cadre_lieutenant.grid(columnspan=self.quart.nb_patrouilleurs, row=0, column=0, padx=10, pady=10)
         label_lieutenant.grid(row=0, column=1)
         label_nom_lieutenant.grid(row=0, column=2, sticky=N)
         label_indicatif.grid(row=0, column=3)
@@ -484,8 +588,6 @@ class Fenetre(Tk):
         bouton_piste.grid(row=0, column=0, padx=10, pady=10)
         bouton_piste.grid(row=0, column=1, padx=10, pady=10)
 
-    #def bouton_cote(self, bouton):
-
     def nouveau_quart_quitter(self):
         """ Initialise une fenêtre de nouveau quart avec les attributs de quart courant.
         """
@@ -500,13 +602,6 @@ class Fenetre(Tk):
                     f.creer_log_existant(pat, log)
 
         self.destroy()
-
-        #self.canvas_damier = CanvasDamier(self, 60, self.partie.damier)
-        #self.canvas_damier.bind('<Button-1>', self.cliquer)
-        #self.canvas_damier.grid(row=0, column=0, sticky=NSEW)
-        #self.message_couleur.grid_forget()
-        #self.messages.grid_forget()
-        #self.creer_etiquettes()
 
     def tous_les_logs(self):
         """Crée une instance de la classeTous_les_logs.
@@ -635,4 +730,3 @@ class Fenetre(Tk):
             couleur: la couleur du texte du message
         """
         Message(titre, message)
-

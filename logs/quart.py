@@ -19,7 +19,7 @@ class Quart:
         dernier_pat_log (Patrouilleur) : Le dernier patrouilleur à avoir eu un log
     """
 
-    def __init__(self, id_lieutenant, nb_patrouilleurs=3, id_204=None, id_205=None, id_206=None, id_207=None):
+    def __init__(self, id_lieutenant, couleur_lieutenant, nb_patrouilleurs=3, id_204=None, id_205=None, id_206=None, id_207=None):
         """Constructeur du Damier. Initialise un damier initial de 8 lignes par 8 colonnes.
 
         Args:
@@ -41,7 +41,7 @@ class Quart:
             "206": id_206,
             "207": id_207
         }
-
+        self.couleur_lieutenant = couleur_lieutenant
         self.dernier_pat_log = []
 
     def effacer_dernier_log(self):
@@ -75,9 +75,9 @@ class Quart:
             (str): La chaîne de caractères construite.
 
         """
-        chaine = "{},{},{}\n".format(self.nb_patrouilleurs,
-                                     self.id_lieutenant.convertir_en_chaine(),
-                                     self.dernier_pat_log)
+        chaine = "{},{},{},{}\n".format(self.nb_patrouilleurs, self.couleur_lieutenant,
+                                        self.id_lieutenant.convertir_en_chaine(),
+                                        self.dernier_pat_log)
 
         for patrouilleur in self.id_patrouilleurs.values():
             if patrouilleur is not None:
@@ -101,7 +101,7 @@ class Quart:
                 patrouilleur = True
             if information_quart != "":
                 if numero_de_ligne == 0:
-                    nb_patrouilleurs, nom_lieutenant, titre_lieutenant, indicatif_lieutenant, \
+                    nb_patrouilleurs, self.couleur_lieutenant, nom_lieutenant, titre_lieutenant, indicatif_lieutenant, \
                     self.dernier_pat_log = information_quart.split(",")
                     self.nb_patrouilleurs = int(nb_patrouilleurs)
                 elif patrouilleur:
@@ -118,6 +118,7 @@ class Quart:
         self.id_lieutenant = Agent(nom_lieutenant, titre_lieutenant, indicatif_lieutenant)
         for pat in self.id_patrouilleurs:
             if self.id_patrouilleurs[pat] is not None:
+                print(self.id_patrouilleurs[pat].logs)
                 self.id_patrouilleurs[pat].position = self.id_patrouilleurs[pat].logs[0]
                 self.id_patrouilleurs[pat].logs.pop(0)
 
