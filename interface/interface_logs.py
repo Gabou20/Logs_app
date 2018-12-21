@@ -9,82 +9,38 @@ from logs.quart import Quart
 from interface.fenetres_supplementaires import Fin_quart, Options, Tous_les_logs, Message
 import datetime
 
+class Cadre_nouveau_patrouilleur(Frame):
+    def __init__(self, colonne, cadre_parent, patrouilleur, commande):
+        #Création objets
+        self.cadre = Frame(cadre_parent, bd=3, relief='ridge')
+
+        label_pat = Label(self.cadre, text="Patrouilleur "+patrouilleur)
+        bouton = Checkbutton(self.cadre, command=commande)
+        label_nom = Label(self.cadre, text="Nom : ")
+        self.entree_nom = Entry(self.cadre, width=20)
+        label_titre = Label(self.cadre, text="Titre : ")
+        self.entree_titre = Listbox(self.cadre, height=3, exportselection=0)
+        for item in ["Lieutenant(e)", "Sergent(e)", "Agent(e)"]:
+            self.entree_titre.insert(0, item)
+        self.entree_titre.select_set(0)
+        label_indicatif = Label(self.cadre, text="Indicatif : ")
+        self.entree_indicatif = Entry(self.cadre, width=20)
+
+        self.cadre.grid(row=1, column=colonne, sticky=W, padx=5, pady=5)
+        label_pat.grid(columnspan=4, row=0, column=1)
+        bouton.grid(row=0, column=5, sticky=W, padx=5, pady=5)
+        self.entree_nom.grid(columnspan=4, row=3, column=3, padx=5, pady=5)
+        label_nom.grid(columnspan=2, row=3, column=0, sticky=W, padx=5, pady=5)
+        label_titre.grid(row=5, column=0)
+        self.entree_titre.grid(rowspan=3, columnspan=4, row=4, column=3, padx=5, pady=5)
+        label_indicatif.grid(columnspan=3, row=7, column=0, sticky=W, padx=5, pady=5)
+        self.entree_indicatif.grid(columnspan=3, row=7, column=3, padx=5, pady=5)
+
 class Nouveau_quart(Tk):
     """ Crée la fenêtre demandant les informations pour créer un nouveau quart.
 
     Attribute:
     """
-    actif_204 = False
-    actif_205 = False
-    actif_206 = False
-    actif_207 = False
-
-    def nouvelle_fenetre_quart(self, nom_lieutenant, indicatif_lieutenant,
-                               nom_204="204", titre_204=None, indicatif_204=None,
-                               nom_205="205", titre_205=None, indicatif_205=None,
-                               nom_206="206", titre_206=None, indicatif_206=None,
-                               nom_207="207", titre_207=None, indicatif_207=None):
-        nb_pat = 0
-        lieutenant = Agent(nom_lieutenant, "Lieutenant", indicatif_lieutenant)
-
-        if self.actif_204:
-            agent_204 = Agent(nom_204, titre_204, indicatif_204)
-            patrouilleur_204 = Patrouilleur(agent_204, "204", ["yellow2", "yellow3"])
-            nb_pat += 1
-        else:
-            patrouilleur_204 = None
-
-        if self.actif_205:
-            agent_205 = Agent(nom_205, titre_205, indicatif_205)
-            patrouilleur_205 = Patrouilleur(agent_205, "205", ["IndianRed2", "IndianRed3"])
-            nb_pat += 1
-        else:
-            patrouilleur_205 = None
-
-        if self.actif_206:
-            agent_206 = Agent(nom_206, titre_206, indicatif_206)
-            patrouilleur_206 = Patrouilleur(agent_206, "206", ["DodgerBlue2", "DodgerBlue3"])
-            nb_pat += 1
-        else:
-            patrouilleur_206 = None
-
-        if self.actif_207:
-            agent_207 = Agent(nom_207, titre_207, indicatif_207)
-            patrouilleur_207 = Patrouilleur(agent_207, "207", ["Chartreuse3", "Chartreuse4"])
-            nb_pat += 1
-        else:
-            patrouilleur_207 = None
-
-        quart = Quart(lieutenant, nb_pat, patrouilleur_204, patrouilleur_205, patrouilleur_206, patrouilleur_207)
-        Fenetre(quart)
-        self.destroy()
-
-    def options_dans_attributs(self, agent):
-        if agent == 204:
-            if self.actif_204:
-                self.actif_204 = False
-            else:
-                self.actif_204 = True
-
-        elif agent == 205:
-            if self.actif_205:
-                self.actif_205 = False
-            else:
-                self.actif_205 = True
-
-        elif agent == 206:
-            if self.actif_206:
-                self.actif_206 = False
-            else:
-                self.actif_206 = True
-
-        elif agent == 207:
-            if self.actif_207:
-                self.actif_207 = False
-            else:
-                self.actif_207 = True
-
-
     def __init__(self):
         """ Constructeur de la classe Nouveau_quart.
         """
@@ -93,151 +49,87 @@ class Nouveau_quart(Tk):
         self.title("Nouveau quart")
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
-        cadre_nouveau_quart = Frame(self)
+        self.cadre_nouveau_quart = Frame(self)
 
-        activer_204 = lambda: self.options_dans_attributs(204)
-        activer_205 = lambda: self.options_dans_attributs(205)
-        activer_206 = lambda: self.options_dans_attributs(206)
-        activer_207 = lambda: self.options_dans_attributs(207)
+        activer_204 = lambda: self.options_dans_attributs("204")
+        activer_205 = lambda: self.options_dans_attributs("205")
+        activer_206 = lambda: self.options_dans_attributs("206")
+        activer_207 = lambda: self.options_dans_attributs("207")
 
-        cadre_nouveau_quart.grid(row=0, padx=5, pady=5)
-        cadre_nouveau_quart.columnconfigure(0, weight=1)
-        cadre_nouveau_quart.columnconfigure(2, weight=1)
+        self.cadres_patrouilleurs = {
+            "204": Cadre_nouveau_patrouilleur(0, self.cadre_nouveau_quart, "204", activer_204),
+            "205": Cadre_nouveau_patrouilleur(1, self.cadre_nouveau_quart, "205", activer_205),
+            "206": Cadre_nouveau_patrouilleur(2, self.cadre_nouveau_quart, "206", activer_206),
+            "207": Cadre_nouveau_patrouilleur(3, self.cadre_nouveau_quart, "207", activer_207)
+        }
+        self.patrouilleurs_actifs = {
+            "204": False,
+            "205": False,
+            "206": False,
+            "207": False
+        }
+        self.couleurs_patrouilleurs = {
+            "204": ["yellow2", "yellow3"],
+            "205": ["DodgerBlue2", "DodgerBlue3"],
+            "206": ["IndianRed2", "IndianRed3"],
+            "207": ["chartreuse3", "chartreuse4"]
+        }
 
-        #Lieutenant
+
+        self.cadre_nouveau_quart.grid(row=0, padx=5, pady=5)
+        self.cadre_nouveau_quart.columnconfigure(0, weight=1)
+        self.cadre_nouveau_quart.columnconfigure(2, weight=1)
+
+        # Lieutenant
         cadre_lieutenant = Frame(self, bd=3, relief='ridge')
         label_lieutenant = Label(cadre_lieutenant, text="Lieutenant")
         label_nom_lieutenant = Label(cadre_lieutenant, text="Nom : ")
-        entree_nom_lieutenant = Entry(cadre_lieutenant, width=20)
+        self.entree_nom_lieutenant = Entry(cadre_lieutenant, width=20)
         label_indicatif_lieutenant = Label(cadre_lieutenant, text="Indicatif : ")
-        entree_indicatif_lieutenant = Entry(cadre_lieutenant, width=20)
+        self.entree_indicatif_lieutenant = Entry(cadre_lieutenant, width=20)
 
         cadre_lieutenant.grid(columnspan=2, row=0, column=1, padx=5, pady=5)
         label_lieutenant.grid(columnspan=3, row=0, column=2, padx=5, pady=5, sticky=W)
         label_nom_lieutenant.grid(columnspan=2, row=1, column=0, sticky=W, padx=5, pady=5)
-        entree_nom_lieutenant.grid(columnspan=4, row=1, column=2, padx=5, pady=5)
+        self.entree_nom_lieutenant.grid(columnspan=4, row=1, column=2, padx=5, pady=5)
         label_indicatif_lieutenant.grid(columnspan=2, row=2, column=0, sticky=W, padx=5, pady=5)
-        entree_indicatif_lieutenant.grid(columnspan=3, row=2, column=3, padx=5, pady=5)
-
-        #204
-        cadre_204 = Frame(self, bd=3, relief='ridge')
-        label_204 = Label(cadre_204, text="Patrouilleur 204")
-        bouton_204 = Checkbutton(cadre_204, command=activer_204)
-        label_nom_204 = Label(cadre_204, text="Nom : ")
-        entree_nom_204 = Entry(cadre_204, width=20)
-        label_titre_204 = Label(cadre_204, text="Titre : ")
-        entree_titre_204 = Listbox(cadre_204, height=3, exportselection=0)
-        for item in ["Lieutenant(e)", "Sergent(e)", "Agent(e)"]:
-            entree_titre_204.insert(0, item)
-        entree_titre_204.select_set(0)
-        label_indicatif_204 = Label(cadre_204, text="Indicatif : ")
-        entree_indicatif_204 = Entry(cadre_204, width=20)
-
-        cadre_204.grid(row=1, column=0, sticky=W, padx=5, pady=5)
-        label_204.grid(columnspan=4, row=0, column=1)
-        bouton_204.grid(row=0, column=5, sticky=W, padx=5, pady=5)
-        entree_nom_204.grid(columnspan=4, row=3, column=3, padx=5, pady=5)
-        label_nom_204.grid(columnspan=2, row=3, column=0, sticky=W, padx=5, pady=5)
-        label_titre_204.grid(row=5, column=0)
-        entree_titre_204.grid(rowspan=3, columnspan=4, row=4, column=3, padx=5, pady=5)
-        label_indicatif_204.grid(columnspan=3, row=7, column=0, sticky=W, padx=5, pady=5)
-        entree_indicatif_204.grid(columnspan=3, row=7, column=3, padx=5, pady=5)
-
-        #205
-        cadre_205 = Frame(self, bd=3, relief='ridge')
-        label_205 = Label(cadre_205, text="Patrouilleur 205")
-        bouton_205 = Checkbutton(cadre_205, command=activer_205)
-        label_nom_205 = Label(cadre_205, text="Nom : ")
-        entree_nom_205 = Entry(cadre_205, width=20)
-        label_titre_205 = Label(cadre_205, text="Titre : ")
-        entree_titre_205 = Listbox(cadre_205, height=3, exportselection=0)
-        for item in ["Lieutenant(e)", "Sergent(e)", "Agent(e)"]:
-            entree_titre_205.insert(0, item)
-        entree_titre_205.select_set(0)
-        label_indicatif_205 = Label(cadre_205, text="Indicatif : ")
-        entree_indicatif_205 = Entry(cadre_205, width=20)
-
-        cadre_205.grid(row=1, column=1, sticky=W, padx=5, pady=5)
-        label_205.grid(columnspan=4, row=0, column=1)
-        bouton_205.grid(row=0, column=5, sticky=W, padx=5, pady=5)
-        entree_nom_205.grid(columnspan=4, row=3, column=3, padx=5, pady=5)
-        label_nom_205.grid(columnspan=2, row=3, column=0, sticky=W, padx=5, pady=5)
-        label_titre_205.grid(row=5, column=0)
-        entree_titre_205.grid(rowspan=3, columnspan=4, row=4, column=3, padx=5, pady=5)
-        label_indicatif_205.grid(columnspan=3, row=7, column=0, sticky=W, padx=5, pady=5)
-        entree_indicatif_205.grid(columnspan=3, row=7, column=3, padx=5, pady=5)
-
-        #206
-        cadre_206 = Frame(self, bd=3, relief='ridge')
-        label_206 = Label(cadre_206, text="Patrouilleur 206")
-        bouton_206 = Checkbutton(cadre_206, command=activer_206)
-        label_nom_206 = Label(cadre_206, text="Nom : ")
-        entree_nom_206 = Entry(cadre_206, width=20)
-        label_titre_206 = Label(cadre_206, text="Titre : ")
-        entree_titre_206 = Listbox(cadre_206, height=3, exportselection=0)
-        for item in ["Lieutenant(e)", "Sergent(e)", "Agent(e)"]:
-            entree_titre_206.insert(0, item)
-        entree_titre_206.select_set(0)
-        label_indicatif_206 = Label(cadre_206, text="Indicatif : ")
-        entree_indicatif_206 = Entry(cadre_206, width=20)
-
-        cadre_206.grid(row=1, column=2, sticky=W, padx=5, pady=5)
-        label_206.grid(columnspan=4, row=0, column=1)
-        bouton_206.grid(row=0, column=5, sticky=W, padx=5, pady=5)
-        entree_nom_206.grid(columnspan=4, row=3, column=3, padx=5, pady=5)
-        label_nom_206.grid(columnspan=2, row=3, column=0, sticky=W, padx=5, pady=5)
-        label_titre_206.grid(row=5, column=0)
-        entree_titre_206.grid(rowspan=3, columnspan=4, row=4, column=3, padx=5, pady=5)
-        label_indicatif_206.grid(columnspan=3, row=7, column=0, sticky=W, padx=5, pady=5)
-        entree_indicatif_206.grid(columnspan=3, row=7, column=3, padx=5, pady=5)
-
-        #207
-        cadre_207 = Frame(self, bd=3, relief='ridge')
-        label_207 = Label(cadre_207, text="Patrouilleur 207")
-        bouton_207 = Checkbutton(cadre_207, command=activer_207)
-        label_nom_207 = Label(cadre_207, text="Nom : ")
-        entree_nom_207 = Entry(cadre_207, width=20)
-        label_titre_207 = Label(cadre_207, text="Titre : ")
-        entree_titre_207 = Listbox(cadre_207, height=3, exportselection=0)
-        for item in ["Lieutenant(e)", "Sergent(e)", "Agent(e)"]:
-            entree_titre_207.insert(0, item)
-        entree_titre_207.select_set(0)
-        label_indicatif_207 = Label(cadre_207, text="Indicatif : ")
-        entree_indicatif_207 = Entry(cadre_207, width=20)
-
-        cadre_207.grid(row=1, column=3, sticky=W, padx=5, pady=5)
-        label_207.grid(columnspan=4, row=0, column=1)
-        bouton_207.grid(row=0, column=5, sticky=W, padx=5, pady=5)
-        entree_nom_207.grid(columnspan=4, row=3, column=3, padx=5, pady=5)
-        label_nom_207.grid(columnspan=2, row=3, column=0, sticky=W, padx=5, pady=5)
-        label_titre_207.grid(row=5, column=0)
-        entree_titre_207.grid(rowspan=3, columnspan=4, row=4, column=3, padx=5, pady=5)
-        label_indicatif_207.grid(columnspan=3, row=7, column=0, sticky=W, padx=5, pady=5)
-        entree_indicatif_207.grid(columnspan=3, row=7, column=3, padx=5, pady=5)
+        self.entree_indicatif_lieutenant.grid(columnspan=3, row=2, column=3, padx=5, pady=5)
 
         cadre_bouton = Frame(self)
         cadre_bouton.grid(columnspan=2, row=3, column=1, sticky=W)
-        ok = lambda: self.nouvelle_fenetre_quart(entree_nom_lieutenant.get(), entree_indicatif_lieutenant.get(),
-                                                 entree_nom_204.get(),
-                                                 entree_titre_204.get(entree_titre_204.curselection()),
-                                                 entree_indicatif_204.get(),
-                                                 entree_nom_205.get(),
-                                                 entree_titre_205.get(entree_titre_205.curselection()),
-                                                 entree_indicatif_205.get(),
-                                                 entree_nom_206.get(),
-                                                 entree_titre_206.get(entree_titre_206.curselection()),
-                                                 entree_indicatif_206.get(),
-                                                 entree_nom_207.get(),
-                                                 entree_titre_207.get(entree_titre_207.curselection()),
-                                                 entree_indicatif_207.get())
-        bouton_ok = Button(cadre_bouton, text="Nouveau quart", command=ok, width=60)
+        bouton_ok = Button(cadre_bouton, text="Nouveau quart", command=self.nouvelle_fenetre_quart, width=60)
         bouton_ok.grid(padx=5, pady=5, sticky=W)
 
-        #annuler = lambda: self.annuler(self, jouer_contre_ordinateur_avant, afficher_sources_avant,
-                                       #afficher_cibles_avant)
-        #bouton_annuler = Button(cadre_boutons, text="Annuler", command=annuler)
-        #bouton_annuler.grid(row=6, column=2, padx=5, pady=5, sticky=E)
+        # annuler = lambda: self.annuler(self, jouer_contre_ordinateur_avant, afficher_sources_avant,
+        # afficher_cibles_avant)
+        # bouton_annuler = Button(cadre_boutons, text="Annuler", command=annuler)
+        # bouton_annuler.grid(row=6, column=2, padx=5, pady=5, sticky=E)
 
+    def nouvelle_fenetre_quart(self):
+        nb_pat = 0
+        patrouilleurs = {
+            "204": None,
+            "205": None,
+            "206": None,
+            "207": None
+        }
+        lieutenant = Agent(self.entree_nom_lieutenant.get(), "Lieutenant", self.entree_indicatif_lieutenant.get())
+
+        for pat in self.patrouilleurs_actifs:
+            if self.patrouilleurs_actifs[pat]:
+                agent = Agent(self.cadres_patrouilleurs[pat].entree_nom.get(), self.cadres_patrouilleurs[pat].entree_titre.get(self.cadres_patrouilleurs[pat].entree_titre.curselection()), self.cadres_patrouilleurs[pat].entree_indicatif.get())
+                patrouilleurs[pat] = Patrouilleur(agent, pat, self.couleurs_patrouilleurs[pat])
+                nb_pat += 1
+
+        quart = Quart(lieutenant, nb_pat, patrouilleurs["204"], patrouilleurs["205"], patrouilleurs["206"], patrouilleurs["207"])
+        Fenetre(quart)
+        self.destroy()
+
+    def options_dans_attributs(self, patrouilleur):
+        if self.patrouilleurs_actifs[patrouilleur]:
+            self.patrouilleurs_actifs[patrouilleur] = False
+        else:
+            self.patrouilleurs_actifs[patrouilleur] = True
 
 class CadrePatrouilleur(Frame):
     def __init__(self, colonne, cadre_parent, poste, agent, couleur1, couleur2):
@@ -263,7 +155,7 @@ class CadrePatrouilleur(Frame):
         self.cadre_position.columnconfigure(4, weight=1)
         self.cadre_position.rowconfigure(0, weight=1)
         self.cadre_position.rowconfigure(2, weight=1)
-        self.cadre_logs.config(bd=1, relief='ridge', bg=couleur2, width=353, height=343)
+        self.cadre_logs.config(bd=1, relief='ridge', bg=couleur2, width=353, height=342)
         self.cadre_logs.columnconfigure(0, weight=1)
         self.cadre_logs.columnconfigure(2, weight=1)
         self.cadre_logs.columnconfigure(4, weight=1)

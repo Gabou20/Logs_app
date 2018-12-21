@@ -41,6 +41,7 @@ class Quart:
             "206": id_206,
             "207": id_207
         }
+
         self.dernier_pat_log = []
 
     def effacer_dernier_log(self):
