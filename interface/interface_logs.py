@@ -211,7 +211,7 @@ class Nouveau_quart(Tk):
         if nb_pat == 0:
             self.afficher_message("Aucun patrouilleur!", "Il doit y avoir au moins un patrouilleur.")
         else:
-            quart = Quart(lieutenant, self.couleurs_possibles[self.valeur_couleur.get()][1],
+            quart = Quart(lieutenant, self.couleurs_possibles[self.valeur_couleur.get()][0],
                         nb_pat, patrouilleurs["204"], patrouilleurs["205"], patrouilleurs["206"], patrouilleurs["207"])
             Fenetre(quart)
             self.destroy()
@@ -561,9 +561,12 @@ class Fenetre(Tk):
         """Initialise un quart avec les cadres pour chaque patrouilleur. Dépend du nombre de patrouilleurs.
         """
         cadre_lieutenant = Frame(cadre_quart, bd=3, relief='ridge', bg=self.quart.couleur_lieutenant)
-        label_lieutenant = Label(cadre_lieutenant, text="Lieutenant(e) : ", bg=self.quart.couleur_lieutenant, font=("Arial", 14, "bold"))
-        label_nom_lieutenant = Label(cadre_lieutenant, text=self.quart.id_lieutenant.nom, bg=self.quart.couleur_lieutenant, font=("Arial", 14, "bold"))
-        label_indicatif = Label(cadre_lieutenant, text=self.quart.id_lieutenant.indicatif, bg=self.quart.couleur_lieutenant, font=("Arial", 14, "bold"))
+        label_lieutenant = Label(cadre_lieutenant, text="Lieutenant(e) : ", bg=self.quart.couleur_lieutenant,
+                                 font=("Arial", 14, "bold"))
+        label_nom_lieutenant = Label(cadre_lieutenant, text=self.quart.id_lieutenant.nom,
+                                     bg=self.quart.couleur_lieutenant, font=("Arial", 14, "bold"))
+        label_indicatif = Label(cadre_lieutenant, text=self.quart.id_lieutenant.indicatif,
+                                bg=self.quart.couleur_lieutenant, font=("Arial", 14, "bold"))
         if self.quart.nb_patrouilleurs !=0:
             cadre_lieutenant.grid(columnspan=self.quart.nb_patrouilleurs, row=0, column=0, padx=10, pady=10)
         label_lieutenant.grid(row=0, column=1)
@@ -593,7 +596,6 @@ class Fenetre(Tk):
         """
 
         f = Fenetre(self.quart)
-
         for pat in f.quart.id_patrouilleurs:
             if f.quart.id_patrouilleurs[pat] is not None:
                 logs = f.quart.id_patrouilleurs[pat].logs

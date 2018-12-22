@@ -92,6 +92,8 @@ class Quart:
         Args:
             chaine (str): La chaîne de caractères.
         """
+        for vieux_pats in self.id_patrouilleurs:
+            self.id_patrouilleurs[vieux_pats] = None
         numero_de_ligne = 0
         patrouilleur = False
         for information_quart in chaine.split("\n"):
