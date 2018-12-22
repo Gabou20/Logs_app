@@ -32,14 +32,15 @@ class Patrouilleur:
         self.position = Log("00:00", None, "Terminal", None, "Début du quart")
         self.logs = []
 
-    def nouveau_log(self, log):
+    def nouveau_log(self, log, nouvelle_heure):
         """Ajoute un log dans la position actuelle et envoie le log précédent dans la liste de logs
 
         Args:
             position (Position): La position où vérifier.
 
         """
-        self.position.heure_fin = log.heure_debut
+        if nouvelle_heure:
+            self.position.heure_fin = log.heure_debut
         self.logs.insert(0, self.position)
         self.position = log
 

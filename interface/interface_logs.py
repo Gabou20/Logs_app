@@ -1,6 +1,6 @@
 __author__ = 'Gabrielle Martin-Fortier'
 
-from tkinter import Tk, Label, Entry, Checkbutton, Button, W, N, Listbox, Frame, NSEW, Menu, filedialog, Radiobutton, StringVar
+from tkinter import Tk, Label, Entry, Checkbutton, Button, W, N, Listbox, Frame, NSEW, Menu, filedialog, Radiobutton, StringVar, END, CENTER
 from logs.log import Log
 from logs.agent import Agent
 from logs.exceptions import ErreurDeplacement, ErreurPositionCible, ErreurPositionSource, PieceInexistante
@@ -234,6 +234,7 @@ class Nouveau_quart(Tk):
 
 class CadrePatrouilleur(Frame):
     def __init__(self, colonne, cadre_parent, poste, agent, couleur1, couleur2):
+
         #Création objets
         self.cadre = Frame(cadre_parent, height=500, width=400, bd=3, relief='ridge')
         self.cadre_position = Frame(self.cadre)
@@ -246,22 +247,27 @@ class CadrePatrouilleur(Frame):
         self.label_indicatif = Label(self.cadre, width=8)
 
         self.position_actuelle = Label(self.cadre_position)
-        self.heure_position = Label(self.cadre_position)
+        self.heure_position = Entry(self.cadre_position)
 
         #Configuration objets
         self.cadre.config(bg=couleur1)
         self.cadre_position.config(bd=3, relief="ridge", bg=couleur2, width=353, height=40)
-        self.cadre_position.columnconfigure(0, weight=1)
-        self.cadre_position.columnconfigure(2, weight=1)
-        self.cadre_position.columnconfigure(4, weight=1)
-        self.cadre_position.rowconfigure(0, weight=1)
-        self.cadre_position.rowconfigure(2, weight=1)
+        col = 0
+        while col < 5:
+            self.cadre_position.columnconfigure(col, weight=1)
+            col += 2
+
+        ligne = 0
+        while ligne < 3:
+            self.cadre_position.rowconfigure(ligne, weight=1)
+            ligne += 2
+
         self.cadre_logs.config(bd=1, relief='ridge', bg=couleur2, width=353, height=342)
         self.cadre_logs.columnconfigure(0, weight=1)
         self.cadre_logs.columnconfigure(2, weight=1)
         self.cadre_logs.columnconfigure(4, weight=1)
-        self.cadre_logs.columnconfigure(5, weight=1)
-        self.cadre_logs.columnconfigure(7, weight=1)
+        self.cadre_logs.columnconfigure(6, weight=1)
+        self.cadre_logs.columnconfigure(8, weight=1)
 
         self.label_poste.config(text=poste, bg=couleur1, font=("Arial", 20, "bold"))
         self.label_titre.config(text=agent.titre, bg=couleur1, font=("Arial", 14, "bold"))
@@ -269,7 +275,8 @@ class CadrePatrouilleur(Frame):
         self.label_indicatif.config(text=agent.indicatif, bg=couleur1, font=("Arial", 14, "bold"))
 
         self.position_actuelle.config(text="Début de quart", bg=couleur2, font=("Arial", 13, "bold"))
-        self.heure_position.config(bd=1, text="00:00", bg=couleur2, font=("Arial", 13, "bold"))
+        self.heure_position.config(bd=0, bg=couleur2, font=("Arial", 13, "bold"), width=6, justify=CENTER)
+        self.heure_position.insert(END, "00:00")
 
         #Grid objets
         self.cadre.grid(row=4, column=colonne, sticky=NSEW)
@@ -633,13 +640,26 @@ class Fenetre(Tk):
     def creer_log(self, patrouilleurs, terminal_exterieur, cote, log):
         heure = datetime.datetime.now().strftime("%H:%M")
         nouveau_log = Log(heure, None, terminal_exterieur, cote, log)
+
         for pat in patrouilleurs:
-            self.quart.id_patrouilleurs[pat].nouveau_log(nouveau_log)
+            self.quart.id_patrouilleurs[pat].nouveau_log(nouveau_log, True)
             self.afficher_logs(pat)
         self.quart.dernier_pat_log = patrouilleurs
 
+    def updater_heures(self):
+        for pats in self.quart.id_patrouilleurs:
+            if self.quart.id_patrouilleurs[pats] is not None:
+                self.quart.id_patrouilleurs[pats].position.heure_debut = self.cadres_patrouilleurs[pats].heure_position.get()
+                index = 1
+                #liste_inverse = self.quart.id_patrouilleurs[pats].logs.copy()
+                #liste_inverse.reverse()
+                for log in self.quart.id_patrouilleurs[pats].logs:
+                    log.heure_debut = self.cadres_patrouilleurs[pats].labels_logs_precedents[index].get()
+                    log.heure_fin = self.cadres_patrouilleurs[pats].labels_logs_precedents[index + 2].get()
+                    index += 4
+
     def creer_log_existant(self, patrouilleur, log):
-        self.quart.id_patrouilleurs[patrouilleur].nouveau_log(log)
+        self.quart.id_patrouilleurs[patrouilleur].nouveau_log(log, False)
         self.afficher_logs(patrouilleur)
         self.quart.dernier_pat_log = [patrouilleur]
 
@@ -647,14 +667,15 @@ class Fenetre(Tk):
         #On affiche d'abord la position actuelle dans le cadre prévu à cet effet
         self.cadres_patrouilleurs[patrouilleur].position_actuelle.config(
             text=self.quart.id_patrouilleurs[patrouilleur].position.afficher_log())
-        self.cadres_patrouilleurs[patrouilleur].heure_position.config(
-            text=self.quart.id_patrouilleurs[patrouilleur].position.heure_debut)
+        self.cadres_patrouilleurs[patrouilleur].heure_position.delete(0, END)
+        self.cadres_patrouilleurs[patrouilleur].heure_position.insert(
+            END, self.quart.id_patrouilleurs[patrouilleur].position.heure_debut)
 
         #Ensuite on affiche les logs précédents dans le cadre juste en dessous
-        self.creer_label_log(self.quart.id_patrouilleurs[patrouilleur].logs[0].heure_fin, patrouilleur)
-        self.creer_label_log("-", patrouilleur)
-        self.creer_label_log(self.quart.id_patrouilleurs[patrouilleur].logs[0].heure_debut, patrouilleur)
-        self.creer_label_log(self.quart.id_patrouilleurs[patrouilleur].logs[0].afficher_log(), patrouilleur)
+        self.creer_label_log(self.quart.id_patrouilleurs[patrouilleur].logs[0].heure_fin, patrouilleur, True)
+        self.creer_label_log("-", patrouilleur, False)
+        self.creer_label_log(self.quart.id_patrouilleurs[patrouilleur].logs[0].heure_debut, patrouilleur, True)
+        self.creer_label_log(self.quart.id_patrouilleurs[patrouilleur].logs[0].afficher_log(), patrouilleur, False)
 
         colonne = 1
         ligne = 1
@@ -669,8 +690,7 @@ class Fenetre(Tk):
         #On affiche d'abord la position actuelle dans le cadre prévu à cet effet
         self.cadres_patrouilleurs[patrouilleur].position_actuelle.config(
             text=self.quart.id_patrouilleurs[patrouilleur].position.afficher_log())
-        self.cadres_patrouilleurs[patrouilleur].heure_position.config(
-            text=self.quart.id_patrouilleurs[patrouilleur].position.heure_debut)
+        self.cadres_patrouilleurs[patrouilleur].heure_position.insert(END, 'default text')
 
         #Ensuite on retire le dernier log dans la liste
         nb_labels = 4
@@ -688,16 +708,26 @@ class Fenetre(Tk):
                 colonne = 1
                 ligne += 1
 
-    def creer_label_log(self, texte, patrouilleur):
-        self.cadres_patrouilleurs[patrouilleur].labels_logs_precedents.insert(0, Label(
-            self.cadres_patrouilleurs[patrouilleur].cadre_logs,
-            text=texte,
-            bg=self.quart.id_patrouilleurs[patrouilleur].theme[1],
-            font=("Arial", 12)))
+    def creer_label_log(self, texte, patrouilleur, entry):
+        if entry:
+            self.cadres_patrouilleurs[patrouilleur].labels_logs_precedents.insert(0, Entry(
+                self.cadres_patrouilleurs[patrouilleur].cadre_logs,
+                bg=self.quart.id_patrouilleurs[patrouilleur].theme[1],
+                width=5, bd=0,
+                justify=CENTER,
+                font=("Arial", 12)))
+            self.cadres_patrouilleurs[patrouilleur].labels_logs_precedents[0].insert(END, texte)
+        else:
+            self.cadres_patrouilleurs[patrouilleur].labels_logs_precedents.insert(0, Label(
+                self.cadres_patrouilleurs[patrouilleur].cadre_logs,
+                text=texte,
+                bg=self.quart.id_patrouilleurs[patrouilleur].theme[1],
+                font=("Arial", 12)))
 
     def sauvegarder_quart(self):
         """ Ouvre une fenêtre qui demande l'emplacement et le nom désirés de la partie et sauvegarde la partie.
         """
+        self.updater_heures()
         fichier = filedialog.asksaveasfilename(defaultextension='txt', title='Quart courant')
         if fichier != "":
             self.quart.sauvegarder(fichier)
