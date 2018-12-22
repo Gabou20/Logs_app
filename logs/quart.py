@@ -4,6 +4,7 @@ from logs.patrouilleur import Patrouilleur
 from logs.agent import Agent
 from logs.exceptions import PieceInexistante, ErreurDeplacement
 from logs.log import Log
+import datetime
 
 
 class Quart:
@@ -43,6 +44,7 @@ class Quart:
         }
         self.couleur_lieutenant = couleur_lieutenant
         self.dernier_pat_log = []
+        self.nom_quart = datetime.datetime.now().strftime("%B-%d-%Y %Hh%M")
 
     def effacer_dernier_log(self):
         """Vérifie si les coordonnées d'une position sont dans les bornes du damier (entre 0 inclusivement et le nombre

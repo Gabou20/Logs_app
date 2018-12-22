@@ -547,17 +547,17 @@ class Fenetre(Tk):
         # On crée le menu
         menu_jeu = Menu(self)
         menu_principal = Menu(menu_jeu, tearoff=0)
-        nouveau_quart = lambda: self.nouveau_quart_quitter()
-        sauvegarder_quart = lambda: self.sauvegarder_quart()
-        charger_quart = lambda: self.charger_quart()
-        annuler_dernier_log = lambda: self.annuler_dernier_log()
+        #nouveau_quart = lambda: self.nouveau_quart_quitter()
+        sauvegarder_quart = lambda: self.sauvegarder_quart(True)
+        #charger_quart = lambda: self.charger_quart()
+        #annuler_dernier_log = lambda: self.annuler_dernier_log()
         logs_effectues = lambda: self.nouveau_quart_quitter()
         options = lambda: self.nouveau_quart_quitter()
 
-        menu_principal.add_command(label="Nouveau quart", command=nouveau_quart)
+        menu_principal.add_command(label="Nouveau quart", command=self.nouveau_quart_quitter)
         menu_principal.add_command(label="Sauvegarder le quart", command=sauvegarder_quart)
-        menu_principal.add_command(label="Charger un quart", command=charger_quart)
-        menu_principal.add_command(label="Annuler le dernier log", command=annuler_dernier_log)
+        menu_principal.add_command(label="Charger un quart", command=self.charger_quart)
+        menu_principal.add_command(label="Annuler le dernier log", command=self.annuler_dernier_log)
         menu_principal.add_command(label="Voir tous les logs", command=logs_effectues)
         menu_principal.add_command(label="Options", command=options)
         menu_principal.add_command(label="Quitter", command=self.quit)
@@ -646,6 +646,8 @@ class Fenetre(Tk):
             self.afficher_logs(pat)
         self.quart.dernier_pat_log = patrouilleurs
 
+        self.sauvegarder_quart(False)
+
     def updater_heures(self):
         for pats in self.quart.id_patrouilleurs:
             if self.quart.id_patrouilleurs[pats] is not None:
@@ -724,11 +726,15 @@ class Fenetre(Tk):
                 bg=self.quart.id_patrouilleurs[patrouilleur].theme[1],
                 font=("Arial", 12)))
 
-    def sauvegarder_quart(self):
+    def sauvegarder_quart(self, demander_nom_fichier):
         """ Ouvre une fenêtre qui demande l'emplacement et le nom désirés de la partie et sauvegarde la partie.
         """
         self.updater_heures()
-        fichier = filedialog.asksaveasfilename(defaultextension='txt', title='Quart courant')
+        if demander_nom_fichier:
+            fichier = filedialog.asksaveasfilename(initialdir=self.quart.nom_quart, defaultextension='txt', title='Quart courant')
+        else:
+            fichier = str(self.quart.nom_quart + ".txt")
+        print(fichier)
         if fichier != "":
             self.quart.sauvegarder(fichier)
 
