@@ -122,7 +122,6 @@ class Quart:
         self.id_lieutenant = Agent(nom_lieutenant, titre_lieutenant, indicatif_lieutenant)
         for pat in self.id_patrouilleurs:
             if self.id_patrouilleurs[pat] is not None:
-                print(self.id_patrouilleurs[pat].logs)
                 self.id_patrouilleurs[pat].position = self.id_patrouilleurs[pat].logs[0]
                 self.id_patrouilleurs[pat].logs.pop(0)
 

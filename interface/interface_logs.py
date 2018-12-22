@@ -10,7 +10,7 @@ from interface.fenetres_supplementaires import Fin_quart, Options, Tous_les_logs
 import datetime
 
 class Cadre_nouveau_patrouilleur(Frame):
-    def __init__(self, colonne, cadre_parent, patrouilleur, commande):
+    def __init__(self, colonne, cadre_parent, patrouilleur, commande, agents):
         #Création objets
         self.cadre = Frame(cadre_parent, bd=3, relief='ridge')
 
@@ -39,17 +39,18 @@ class Cadre_nouveau_patrouilleur(Frame):
         }
 
         self.cadre_pat = Frame(self.cadre)
-        label_pat = Label(self.cadre_pat, text="Patrouilleur "+patrouilleur)
+        label_pat = Label(self.cadre_pat, text="Patrouilleur "+patrouilleur, font=("Arial", 13, "bold"))
         bouton = Checkbutton(self.cadre_pat, command=commande)
-        label_nom = Label(self.cadre, text=" Nom : ")
-        self.entree_nom = Entry(self.cadre, width=20)
-        label_titre = Label(self.cadre, text="  Titre : ")
-        self.entree_titre = Listbox(self.cadre, height=3, exportselection=0)
-        for item in ["Lieutenant(e)", "Sergent(e)", "Agent(e)"]:
-            self.entree_titre.insert(0, item)
-        self.entree_titre.select_set(0)
-        label_indicatif = Label(self.cadre, text="Indicatif : ")
-        self.entree_indicatif = Entry(self.cadre, width=20)
+        #label_nom = Label(self.cadre, text=" Nom : ")
+        #self.entree_nom = Entry(self.cadre, width=20)
+        #label_titre = Label(self.cadre, text="  Titre : ")
+        #self.entree_titre = Listbox(self.cadre, height=3, exportselection=0)
+        self.entree_agent = Listbox(self.cadre, height=5, exportselection=0, yscrollcommand=1, font=("Arial", 13))
+        for item in agents:
+            self.entree_agent.insert(0, item)
+        #self.entree_titre.select_set(0)
+        #label_indicatif = Label(self.cadre, text="Indicatif : ")
+        #self.entree_indicatif = Entry(self.cadre, width=20)
         self.cadre_couleurs = Frame(self.cadre)
         self.valeur_couleur = StringVar()
         self.valeur_couleur.set("rouge")
@@ -83,12 +84,12 @@ class Cadre_nouveau_patrouilleur(Frame):
 
         label_pat.grid(row=1, column=1, sticky=W)
         bouton.grid(row=1, column=3, sticky=W, padx=5, pady=5)
-        self.entree_nom.grid(row=3, column=3, padx=5, pady=5, sticky=W)
-        label_nom.grid(row=3, column=1, sticky=W, padx=5, pady=5)
-        label_titre.grid(row=5, column=1, sticky=W)
-        self.entree_titre.grid(row=5, column=3, padx=5, pady=5, sticky=W)
-        label_indicatif.grid(row=7, column=1, sticky=W, padx=5, pady=5)
-        self.entree_indicatif.grid(row=7, column=3, padx=5, pady=5, sticky=W)
+        #self.entree_nom.grid(row=3, column=3, padx=5, pady=5, sticky=W)
+        #label_nom.grid(row=3, column=1, sticky=W, padx=5, pady=5)
+        #label_titre.grid(row=5, column=1, sticky=W)
+        self.entree_agent.grid(row=5, column=3, padx=5, pady=5, sticky=W)
+        #label_indicatif.grid(row=7, column=1, sticky=W, padx=5, pady=5)
+        #self.entree_indicatif.grid(row=7, column=3, padx=5, pady=5, sticky=W)
         colonne = 1
         for couleur in self.boutons_couleurs:
             self.boutons_couleurs[couleur].grid(row=8, column=colonne, padx=2, pady=2)
@@ -109,6 +110,8 @@ class Nouveau_quart(Tk):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
         self.cadre_nouveau_quart = Frame(self)
+        self.liste_agents = {}
+        self.charger_agents()
 
         activer_204 = lambda: self.options_dans_attributs("204")
         activer_205 = lambda: self.options_dans_attributs("205")
@@ -116,10 +119,10 @@ class Nouveau_quart(Tk):
         activer_207 = lambda: self.options_dans_attributs("207")
 
         self.cadres_patrouilleurs = {
-            "204": Cadre_nouveau_patrouilleur(0, self.cadre_nouveau_quart, "204", activer_204),
-            "205": Cadre_nouveau_patrouilleur(1, self.cadre_nouveau_quart, "205", activer_205),
-            "206": Cadre_nouveau_patrouilleur(2, self.cadre_nouveau_quart, "206", activer_206),
-            "207": Cadre_nouveau_patrouilleur(3, self.cadre_nouveau_quart, "207", activer_207)
+            "204": Cadre_nouveau_patrouilleur(0, self.cadre_nouveau_quart, "204", activer_204, self.liste_agents),
+            "205": Cadre_nouveau_patrouilleur(1, self.cadre_nouveau_quart, "205", activer_205, self.liste_agents),
+            "206": Cadre_nouveau_patrouilleur(2, self.cadre_nouveau_quart, "206", activer_206, self.liste_agents),
+            "207": Cadre_nouveau_patrouilleur(3, self.cadre_nouveau_quart, "207", activer_207, self.liste_agents)
         }
         self.patrouilleurs_actifs = {
             "204": False,
@@ -156,11 +159,11 @@ class Nouveau_quart(Tk):
 
         # Lieutenant
         cadre_lieutenant = Frame(self.cadre_nouveau_quart, bd=3, relief='ridge')
-        label_lieutenant = Label(cadre_lieutenant, text="Lieutenant")
-        label_nom_lieutenant = Label(cadre_lieutenant, text="Nom : ")
-        self.entree_nom_lieutenant = Entry(cadre_lieutenant, width=20)
-        label_indicatif_lieutenant = Label(cadre_lieutenant, text="Indicatif : ")
-        self.entree_indicatif_lieutenant = Entry(cadre_lieutenant, width=20)
+        label_lieutenant = Label(cadre_lieutenant, text="Lieutenant", font=("Arial", 13, "bold"))
+        #label_nom_lieutenant = Label(cadre_lieutenant, text="Nom : ")
+        #self.entree_nom_lieutenant = Entry(cadre_lieutenant, width=20)
+        #label_indicatif_lieutenant = Label(cadre_lieutenant, text="Indicatif : ")
+        #self.entree_indicatif_lieutenant = Entry(cadre_lieutenant, width=20)
         cadre_couleurs = Frame(cadre_lieutenant)
         self.valeur_couleur = StringVar()
         self.valeur_couleur.set("gris")
@@ -169,13 +172,17 @@ class Nouveau_quart(Tk):
                                                          selectcolor=self.couleurs_possibles[couleur][0],
                                                          variable=self.valeur_couleur, value=couleur, bd=2,
                                                          indicatoron=0, width=2)
+        self.entree_lieutenant = Listbox(cadre_lieutenant, height=5, width=30, exportselection=0, yscrollcommand=1, font=("Arial", 13))
+        for item in self.liste_agents:
+            self.entree_lieutenant.insert(0, item)
 
         cadre_lieutenant.grid(columnspan=4, row=0, column=0, padx=5, pady=5)
-        label_lieutenant.grid(columnspan=3, row=0, column=2, padx=5, pady=5, sticky=W)
-        label_nom_lieutenant.grid(columnspan=2, row=1, column=0, sticky=W, padx=5, pady=5)
-        self.entree_nom_lieutenant.grid(columnspan=4, row=1, column=2, padx=5, pady=5)
-        label_indicatif_lieutenant.grid(columnspan=2, row=2, column=0, sticky=W, padx=5, pady=5)
-        self.entree_indicatif_lieutenant.grid(columnspan=3, row=2, column=3, padx=5, pady=5)
+        label_lieutenant.grid(row=0, column=0, padx=5, pady=5)
+        self.entree_lieutenant.grid(row=1, column=0, sticky=W, padx=5, pady=5)
+        #label_nom_lieutenant.grid(columnspan=2, row=1, column=0, sticky=W, padx=5, pady=5)
+        #self.entree_nom_lieutenant.grid(columnspan=4, row=1, column=2, padx=5, pady=5)
+        #label_indicatif_lieutenant.grid(columnspan=2, row=2, column=0, sticky=W, padx=5, pady=5)
+        #self.entree_indicatif_lieutenant.grid(columnspan=3, row=2, column=3, padx=5, pady=5)
         cadre_couleurs.grid(row=3, column=0, columnspan=5)
 
         numero = 0
@@ -201,16 +208,22 @@ class Nouveau_quart(Tk):
             "206": None,
             "207": None
         }
-        lieutenant = Agent(self.entree_nom_lieutenant.get(), "Lieutenant(e)", self.entree_indicatif_lieutenant.get())
+        #lieutenant = Agent(self.entree_nom_lieutenant.get(), "Lieutenant(e)", self.entree_indicatif_lieutenant.get())
+        try:
+            lieutenant = self.liste_agents[self.entree_lieutenant.get(self.entree_lieutenant.curselection())]
+        except:
+            self.afficher_message("Lieutenant sans âme", "Vous devez choisir un agent pour le lieutenant")
 
-        for pat in self.patrouilleurs_actifs:
-            if self.patrouilleurs_actifs[pat]:
-                agent = Agent(self.cadres_patrouilleurs[pat].entree_nom.get(), self.cadres_patrouilleurs[pat].entree_titre.get(self.cadres_patrouilleurs[pat].entree_titre.curselection()), self.cadres_patrouilleurs[pat].entree_indicatif.get())
-                patrouilleurs[pat] = Patrouilleur(agent, pat, self.couleurs_possibles[self.cadres_patrouilleurs[pat].valeur_couleur.get()])
-                nb_pat += 1
-        if nb_pat == 0:
-            self.afficher_message("Aucun patrouilleur!", "Il doit y avoir au moins un patrouilleur.")
-        else:
+        try:
+            for pat in self.patrouilleurs_actifs:
+                if self.patrouilleurs_actifs[pat]:
+                    agent = self.liste_agents[self.cadres_patrouilleurs[pat].entree_agent.get(self.cadres_patrouilleurs[pat].entree_agent.curselection())]
+                    #agent = Agent(self.cadres_patrouilleurs[pat].entree_nom.get(), self.cadres_patrouilleurs[pat].entree_titre.get(self.cadres_patrouilleurs[pat].entree_titre.curselection()), self.cadres_patrouilleurs[pat].entree_indicatif.get())
+                    patrouilleurs[pat] = Patrouilleur(agent, pat, self.couleurs_possibles[self.cadres_patrouilleurs[pat].valeur_couleur.get()])
+                    nb_pat += 1
+        except:
+            self.afficher_message("Patrouilleurs anonymes", "Aucun patrouilleur n'est activé, ou l'un des patrouilleurs est activé mais n'a pas d'identité")
+        if nb_pat != 0:
             quart = Quart(lieutenant, self.couleurs_possibles[self.valeur_couleur.get()][0],
                         nb_pat, patrouilleurs["204"], patrouilleurs["205"], patrouilleurs["206"], patrouilleurs["207"])
             Fenetre(quart)
@@ -221,6 +234,14 @@ class Nouveau_quart(Tk):
             self.patrouilleurs_actifs[patrouilleur] = False
         else:
             self.patrouilleurs_actifs[patrouilleur] = True
+
+    def charger_agents(self):
+        fichier = open("agents.txt", 'r')
+        chaine = fichier.read()
+        for agent in chaine.split("\n"):
+            nom, titre, indicatif = agent.split(",")
+            agent = Agent(nom, titre, indicatif)
+            self.liste_agents[agent.afficher_agent()] = agent
 
     def afficher_message(self, titre, message):
         """Affiche un message d'une certaine couleur en-dessous du damier.
@@ -568,7 +589,7 @@ class Fenetre(Tk):
         """Initialise un quart avec les cadres pour chaque patrouilleur. Dépend du nombre de patrouilleurs.
         """
         cadre_lieutenant = Frame(cadre_quart, bd=3, relief='ridge', bg=self.quart.couleur_lieutenant)
-        label_lieutenant = Label(cadre_lieutenant, text="Lieutenant(e) : ", bg=self.quart.couleur_lieutenant,
+        label_lieutenant = Label(cadre_lieutenant, text=self.quart.id_lieutenant.titre + " : ", bg=self.quart.couleur_lieutenant,
                                  font=("Arial", 14, "bold"))
         label_nom_lieutenant = Label(cadre_lieutenant, text=self.quart.id_lieutenant.nom,
                                      bg=self.quart.couleur_lieutenant, font=("Arial", 14, "bold"))
@@ -640,7 +661,9 @@ class Fenetre(Tk):
     def creer_log(self, patrouilleurs, terminal_exterieur, cote, log):
         heure = datetime.datetime.now().strftime("%H:%M")
         nouveau_log = Log(heure, None, terminal_exterieur, cote, log)
-
+        for pats in self.quart.id_patrouilleurs:
+            if self.quart.id_patrouilleurs[pats] is not None:
+                self.quart.id_patrouilleurs[pats].position.heure_debut = self.cadres_patrouilleurs[pats].heure_position.get()
         for pat in patrouilleurs:
             self.quart.id_patrouilleurs[pat].nouveau_log(nouveau_log, True)
             self.afficher_logs(pat)
@@ -653,8 +676,6 @@ class Fenetre(Tk):
             if self.quart.id_patrouilleurs[pats] is not None:
                 self.quart.id_patrouilleurs[pats].position.heure_debut = self.cadres_patrouilleurs[pats].heure_position.get()
                 index = 1
-                #liste_inverse = self.quart.id_patrouilleurs[pats].logs.copy()
-                #liste_inverse.reverse()
                 for log in self.quart.id_patrouilleurs[pats].logs:
                     log.heure_debut = self.cadres_patrouilleurs[pats].labels_logs_precedents[index].get()
                     log.heure_fin = self.cadres_patrouilleurs[pats].labels_logs_precedents[index + 2].get()
@@ -692,7 +713,8 @@ class Fenetre(Tk):
         #On affiche d'abord la position actuelle dans le cadre prévu à cet effet
         self.cadres_patrouilleurs[patrouilleur].position_actuelle.config(
             text=self.quart.id_patrouilleurs[patrouilleur].position.afficher_log())
-        self.cadres_patrouilleurs[patrouilleur].heure_position.insert(END, 'default text')
+        self.cadres_patrouilleurs[patrouilleur].heure_position.delete(0, END)
+        self.cadres_patrouilleurs[patrouilleur].heure_position.insert(END, self.quart.id_patrouilleurs[patrouilleur].position.heure_debut)
 
         #Ensuite on retire le dernier log dans la liste
         nb_labels = 4
@@ -731,17 +753,16 @@ class Fenetre(Tk):
         """
         self.updater_heures()
         if demander_nom_fichier:
-            fichier = filedialog.asksaveasfilename(initialdir=self.quart.nom_quart, defaultextension='txt', title='Quart courant')
+            fichier = filedialog.asksaveasfilename(parent=self, initialdir=self.quart.nom_quart, defaultextension='txt', title='Quart courant')
         else:
             fichier = str(self.quart.nom_quart + ".txt")
-        print(fichier)
         if fichier != "":
             self.quart.sauvegarder(fichier)
 
     def charger_quart(self):
         """ Ouvre une fenêtre qui demande la partie à charger et charge cette partie.
         """
-        fichier = filedialog.askopenfilename(defaultextension='txt', title='Charger une partie')
+        fichier = filedialog.askopenfilename(parent=self, defaultextension='txt', title='Charger une partie')
         if fichier != "":
             f = open(fichier, 'r')
             self.quart.charger_dune_chaine(f.read())
