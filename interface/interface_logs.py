@@ -45,8 +45,8 @@ class Cadre_nouveau_patrouilleur(Frame):
         #self.entree_nom = Entry(self.cadre, width=20)
         #label_titre = Label(self.cadre, text="  Titre : ")
         #self.entree_titre = Listbox(self.cadre, height=3, exportselection=0)
-        self.entree_agent = Listbox(self.cadre, height=5, exportselection=0, yscrollcommand=1, font=("Arial", 13))
-        for item in agents:
+        self.entree_agent = Listbox(self.cadre, height=5, width=18, exportselection=0, yscrollcommand=1, font=("Arial", 13))
+        for item in sorted(agents, reverse=True):
             self.entree_agent.insert(0, item)
         #self.entree_titre.select_set(0)
         #label_indicatif = Label(self.cadre, text="Indicatif : ")
@@ -172,18 +172,18 @@ class Nouveau_quart(Tk):
                                                          selectcolor=self.couleurs_possibles[couleur][0],
                                                          variable=self.valeur_couleur, value=couleur, bd=2,
                                                          indicatoron=0, width=2)
-        self.entree_lieutenant = Listbox(cadre_lieutenant, height=5, width=30, exportselection=0, yscrollcommand=1, font=("Arial", 13))
-        for item in self.liste_agents:
+        self.entree_lieutenant = Listbox(cadre_lieutenant, height=5, width=18, exportselection=0, yscrollcommand=1, font=("Arial", 13))
+        for item in sorted(self.liste_agents, reverse=True):
             self.entree_lieutenant.insert(0, item)
 
         cadre_lieutenant.grid(columnspan=4, row=0, column=0, padx=5, pady=5)
         label_lieutenant.grid(row=0, column=0, padx=5, pady=5)
-        self.entree_lieutenant.grid(row=1, column=0, sticky=W, padx=5, pady=5)
+        self.entree_lieutenant.grid(row=1, column=0, padx=5, pady=5)
         #label_nom_lieutenant.grid(columnspan=2, row=1, column=0, sticky=W, padx=5, pady=5)
         #self.entree_nom_lieutenant.grid(columnspan=4, row=1, column=2, padx=5, pady=5)
         #label_indicatif_lieutenant.grid(columnspan=2, row=2, column=0, sticky=W, padx=5, pady=5)
         #self.entree_indicatif_lieutenant.grid(columnspan=3, row=2, column=3, padx=5, pady=5)
-        cadre_couleurs.grid(row=3, column=0, columnspan=5)
+        cadre_couleurs.grid(row=3, column=0)
 
         numero = 0
         while numero < 19:
@@ -209,21 +209,31 @@ class Nouveau_quart(Tk):
             "207": None
         }
         #lieutenant = Agent(self.entree_nom_lieutenant.get(), "Lieutenant(e)", self.entree_indicatif_lieutenant.get())
+        erreur = False
         try:
             lieutenant = self.liste_agents[self.entree_lieutenant.get(self.entree_lieutenant.curselection())]
         except:
             self.afficher_message("Lieutenant sans âme", "Vous devez choisir un agent pour le lieutenant")
+            erreur=True
 
-        try:
-            for pat in self.patrouilleurs_actifs:
-                if self.patrouilleurs_actifs[pat]:
+
+        for pat in self.patrouilleurs_actifs:
+            if self.patrouilleurs_actifs[pat]:
+                try:
                     agent = self.liste_agents[self.cadres_patrouilleurs[pat].entree_agent.get(self.cadres_patrouilleurs[pat].entree_agent.curselection())]
-                    #agent = Agent(self.cadres_patrouilleurs[pat].entree_nom.get(), self.cadres_patrouilleurs[pat].entree_titre.get(self.cadres_patrouilleurs[pat].entree_titre.curselection()), self.cadres_patrouilleurs[pat].entree_indicatif.get())
-                    patrouilleurs[pat] = Patrouilleur(agent, pat, self.couleurs_possibles[self.cadres_patrouilleurs[pat].valeur_couleur.get()])
+                    patrouilleurs[pat] = Patrouilleur(agent, pat, self.couleurs_possibles[
+                        self.cadres_patrouilleurs[pat].valeur_couleur.get()])
                     nb_pat += 1
-        except:
-            self.afficher_message("Patrouilleurs anonymes", "Aucun patrouilleur n'est activé, ou l'un des patrouilleurs est activé mais n'a pas d'identité")
-        if nb_pat != 0:
+                except:
+                    if not erreur:
+                        self.afficher_message("Patrouilleurs anonymes",
+                                              "L'un des patrouilleurs est activé mais n'a pas d'identité")
+                        erreur = True
+                #agent = Agent(self.cadres_patrouilleurs[pat].entree_nom.get(), self.cadres_patrouilleurs[pat].entree_titre.get(self.cadres_patrouilleurs[pat].entree_titre.curselection()), self.cadres_patrouilleurs[pat].entree_indicatif.get())
+
+        if nb_pat == 0 and not erreur:
+            self.afficher_message("Aucun patrouilleur", "L'aéroport n'est pas très sécuritaire sans aucun patrouilleur!")
+        elif nb_pat != 0:
             quart = Quart(lieutenant, self.couleurs_possibles[self.valeur_couleur.get()][0],
                         nb_pat, patrouilleurs["204"], patrouilleurs["205"], patrouilleurs["206"], patrouilleurs["207"])
             Fenetre(quart)
@@ -257,22 +267,26 @@ class CadrePatrouilleur(Frame):
     def __init__(self, colonne, cadre_parent, poste, agent, couleur1, couleur2):
 
         #Création objets
-        self.cadre = Frame(cadre_parent, height=500, width=400, bd=3, relief='ridge')
-        self.cadre_position = Frame(self.cadre)
-        self.cadre_logs = Frame(self.cadre)
+        self.cadre = Frame(cadre_parent, height=500, width=400, bd=3, relief='ridge', bg=couleur1)
+        self.cadre.grid_propagate(0)
+        self.cadre_position = Frame(self.cadre, bd=3, relief="ridge", bg=couleur2, width=353, height=40)
+        self.cadre_logs = Frame(self.cadre, bd=1, relief='ridge', bg=couleur2, width=353, height=342)
         self.labels_logs_precedents = []
 
-        self.label_poste = Label(self.cadre)
-        self.label_titre = Label(self.cadre, width=8)
-        self.label_nom = Label(self.cadre, width=8)
-        self.label_indicatif = Label(self.cadre, width=8)
+        self.label_poste = Label(self.cadre, text=poste, bg=couleur1, font=("Arial", 20, "bold"))
+        self.label_titre = Label(self.cadre, text=agent.titre, bg=couleur1, font=("Arial", 14, "bold"))
+        self.label_nom = Label(self.cadre, text=agent.nom, bg=couleur1, font=("Arial", 14, "bold"))
+        self.label_indicatif = Label(self.cadre, text=agent.indicatif, bg=couleur1, font=("Arial", 14, "bold"))
 
         self.position_actuelle = Label(self.cadre_position)
         self.heure_position = Entry(self.cadre_position)
 
         #Configuration objets
-        self.cadre.config(bg=couleur1)
-        self.cadre_position.config(bd=3, relief="ridge", bg=couleur2, width=353, height=40)
+        #self.cadre.columnconfigure(0, weight=1)
+        #self.cadre.columnconfigure(2, weight=1)
+        #self.cadre.columnconfigure(4, weight=1)
+        #self.cadre.columnconfigure(6, weight=1)
+
         col = 0
         while col < 5:
             self.cadre_position.columnconfigure(col, weight=1)
@@ -283,17 +297,11 @@ class CadrePatrouilleur(Frame):
             self.cadre_position.rowconfigure(ligne, weight=1)
             ligne += 2
 
-        self.cadre_logs.config(bd=1, relief='ridge', bg=couleur2, width=353, height=342)
         self.cadre_logs.columnconfigure(0, weight=1)
         self.cadre_logs.columnconfigure(2, weight=1)
         self.cadre_logs.columnconfigure(4, weight=1)
         self.cadre_logs.columnconfigure(6, weight=1)
         self.cadre_logs.columnconfigure(8, weight=1)
-
-        self.label_poste.config(text=poste, bg=couleur1, font=("Arial", 20, "bold"))
-        self.label_titre.config(text=agent.titre, bg=couleur1, font=("Arial", 14, "bold"))
-        self.label_nom.config(text=agent.nom, bg=couleur1, font=("Arial", 14, "bold"))
-        self.label_indicatif.config(text=agent.indicatif, bg=couleur1, font=("Arial", 14, "bold"))
 
         self.position_actuelle.config(text="Début de quart", bg=couleur2, font=("Arial", 13, "bold"))
         self.heure_position.config(bd=0, bg=couleur2, font=("Arial", 13, "bold"), width=6, justify=CENTER)
@@ -301,14 +309,14 @@ class CadrePatrouilleur(Frame):
 
         #Grid objets
         self.cadre.grid(row=4, column=colonne, sticky=NSEW)
-        self.label_poste.grid(row=0, column=1, padx=10, pady=10)
-        self.label_titre.grid(row=1, column=0, padx=10, pady=10)
-        self.label_nom.grid(row=1, column=1, padx=10, pady=10)
-        self.label_indicatif.grid(row=1, column=2, padx=10, pady=10)
+        self.label_poste.grid(row=0, column=1, padx=5, pady=10)
+        self.label_titre.grid(row=1, column=0, padx=5, pady=10)
+        self.label_nom.grid(row=1, column=1, padx=5, pady=10)
+        self.label_indicatif.grid(row=1, column=2, padx=5, pady=10)
 
-        self.cadre_logs.grid(row=4, columnspan=3, column=0)
+        self.cadre_logs.grid(row=4, columnspan=3, column=0, padx=5)
         self.cadre_logs.grid_propagate(0)
-        self.cadre_position.grid(row=3, column=0, columnspan=3)
+        self.cadre_position.grid(columnspan=3, row=3, column=0, padx=5)
         self.cadre_position.grid_propagate(0)
 
         self.position_actuelle.grid(row=1, column=1, padx=5, pady=5)

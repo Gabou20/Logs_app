@@ -25,6 +25,6 @@ class Agent:
         return chaine
 
     def afficher_agent(self):
-        return self.titre + " " + self.nom + " " + self.indicatif
+        return self.nom + " " + self.indicatif
 
     #def charger_dune_chaine(self, chaine):
