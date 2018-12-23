@@ -25,6 +25,7 @@ class Log:
         self.terminal_exterieur = terminal_exterieur
         self.cote = cote
         self.log = log
+        self.note = None
 
     def afficher_log(self):
         """Méthode servant à afficher les informations du log de façon concise dans la fenêtre du patrouilleur.

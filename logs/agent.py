@@ -24,7 +24,9 @@ class Agent:
 
         return chaine
 
-    def afficher_agent(self):
+    def afficher_sans_titre(self):
         return self.nom + " " + self.indicatif
 
-    #def charger_dune_chaine(self, chaine):
+
+    def afficher_avec_titre(self):
+        return self.titre + "  " + self.nom + "  " + self.indicatif

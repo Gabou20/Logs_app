@@ -1,12 +1,13 @@
 __author__ = 'Gabrielle Martin-Fortier '
 
-from tkinter import Tk, Button, Label, Entry, Frame, Checkbutton, N, S, W, E, scrolledtext, Listbox
+from tkinter import Tk, Button, Label, Entry, Frame, Checkbutton, N, END, W, E, scrolledtext, Listbox
 from logs.patrouilleur import Patrouilleur
 from logs.log import Log
 from random import choice
 from time import sleep
+from logs.agent import Agent
 
-class Fin_quart(Tk):
+class FinQuart(Tk):
     """ Fenêtre s'ouvrant à la fin d'une partie de dames. Offre trois actions : nouvelle partie, revoir la partie et
         quitter.
 
@@ -48,6 +49,65 @@ class Fin_quart(Tk):
         bouton_nouvelle_partie.grid(pady=2)
         bouton_revoir_partie.grid(pady=2)
         bouton_quitter.grid(pady=2)
+
+class GestionAgents(Tk):
+    """ Crée la fenêtre d'options d'un jeu de dames.
+
+        Attribute:
+            fenetre (Tk): fenêtre du jeu de dames
+        """
+
+    def __init__(self, fenetre):
+        """ Constructeur de la classe GestionAgents
+
+            Args:
+                fenetre (Tk) : fenetre actuelle de quart
+        """
+        super().__init__()
+        self.resizable(0, 0)
+        self.title("Gestion des agents")
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(2, weight=1)
+        self.grid_columnconfigure(4, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(2, weight=1)
+        self.fenetre = fenetre
+
+        cadre_supprimer_modifier = Frame(self, relief="ridge", bd=2)
+        cadre_ajouter = Frame(self, relief="ridge")
+
+        cadre_ajouter.grid(row=1, column=1)
+        cadre_supprimer_modifier.grid(row=1, column=3)
+
+        label_nom = Label(cadre_ajouter, text=" Nom : ", font=("Arial", 13, "bold"))
+        entree_nom = Entry(cadre_ajouter, width=15, font=("Arial", 13))
+        label_titre = Label(cadre_ajouter, text="  Titre : ", font=("Arial", 13, "bold"))
+        entree_titre = Listbox(cadre_ajouter, height=3, exportselection=0, font=("Arial", 13), width=15)
+        label_indicatif = Label(cadre_ajouter, text="Indicatif : ", font=("Arial", 13, "bold"))
+        entree_indicatif = Entry(cadre_ajouter, width=15, font=("Arial", 13))
+        nouvel_agent = lambda: self.nouvel_agent(entree_nom.get(),
+                                            entree_titre.get(entree_titre.curselection()), entree_indicatif.get())
+        bouton_ajouter = Button(cadre_ajouter, text="Ajouter agent", font=("Arial", 13, "bold"), command=nouvel_agent)
+        for item in ["Lieutenant(e)", "Sergent(e)", "Agent(e"]:
+            entree_titre.insert(0, item)
+        entree_titre.select_set(0)
+        entree_nom.grid(row=3, column=3, padx=5, pady=5, sticky=W)
+        label_nom.grid(row=3, column=1, sticky=W, padx=5, pady=5)
+        label_titre.grid(row=6, column=1, sticky=W)
+        label_indicatif.grid(row=9, column=1, sticky=W, padx=5, pady=5)
+        entree_titre.grid(row=5, column=3, rowspan=3)
+        entree_indicatif.grid(row=9, column=3, padx=5, pady=5, sticky=W)
+        bouton_ajouter.grid(row=10, column=1, padx=5, pady=5, columnspan=3)
+
+    def nouvel_agent(self, nom, titre, indicatif):
+        agent = Agent(nom, titre, indicatif)
+        self.fenetre.liste_agents[agent.afficher_sans_titre()] = agent
+
+        for cadre in self.fenetre.cadres_patrouilleurs.values():
+            cadre.entree_agent.insert(END, agent.afficher_sans_titre())
+        self.fenetre.entree_lieutenant.insert(END, agent.afficher_sans_titre())
+        self.destroy()
+
 
 
 class Options(Tk):
@@ -173,7 +233,7 @@ class Options(Tk):
         """
 
 
-class Tous_les_logs(Tk):
+class TousLesLogs(Tk):
     """Ouvre une nouvelle fenêtre qui affiche une liste des déplacement effectués jusqu'à maintenant dans la partie.
     """
 

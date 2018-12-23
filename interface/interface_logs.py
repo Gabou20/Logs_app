@@ -6,7 +6,7 @@ from logs.agent import Agent
 from logs.exceptions import ErreurDeplacement, ErreurPositionCible, ErreurPositionSource, PieceInexistante
 from logs.patrouilleur import Patrouilleur
 from logs.quart import Quart
-from interface.fenetres_supplementaires import Fin_quart, Options, Tous_les_logs, Message
+from interface.fenetres_supplementaires import FinQuart, Options, TousLesLogs, Message, GestionAgents
 import datetime
 
 class Cadre_nouveau_patrouilleur(Frame):
@@ -41,16 +41,9 @@ class Cadre_nouveau_patrouilleur(Frame):
         self.cadre_pat = Frame(self.cadre)
         label_pat = Label(self.cadre_pat, text="Patrouilleur "+patrouilleur, font=("Arial", 13, "bold"))
         bouton = Checkbutton(self.cadre_pat, command=commande)
-        #label_nom = Label(self.cadre, text=" Nom : ")
-        #self.entree_nom = Entry(self.cadre, width=20)
-        #label_titre = Label(self.cadre, text="  Titre : ")
-        #self.entree_titre = Listbox(self.cadre, height=3, exportselection=0)
         self.entree_agent = Listbox(self.cadre, height=5, width=18, exportselection=0, yscrollcommand=1, font=("Arial", 13))
         for item in sorted(agents, reverse=True):
             self.entree_agent.insert(0, item)
-        #self.entree_titre.select_set(0)
-        #label_indicatif = Label(self.cadre, text="Indicatif : ")
-        #self.entree_indicatif = Entry(self.cadre, width=20)
         self.cadre_couleurs = Frame(self.cadre)
         self.valeur_couleur = StringVar()
         self.valeur_couleur.set("rouge")
@@ -94,7 +87,6 @@ class Cadre_nouveau_patrouilleur(Frame):
         for couleur in self.boutons_couleurs:
             self.boutons_couleurs[couleur].grid(row=8, column=colonne, padx=2, pady=2)
             colonne += 2
-
 
 class Nouveau_quart(Tk):
     """ Crée la fenêtre demandant les informations pour créer un nouveau quart.
@@ -157,13 +149,19 @@ class Nouveau_quart(Tk):
 
         self.cadre_nouveau_quart.grid(row=0, padx=5, pady=5)
 
+        #Cadre options
+        cadre_options = Frame(self.cadre_nouveau_quart, bd=3, relief="ridge")
+        cadre_options.grid(row=0, column=0)
+
+        bouton_gestion_agents = Button(cadre_options, text="Gestion des agents",
+                                       font=("Arial", 13, "bold"),
+                                       command=self.gestion_agents)
+
+        bouton_gestion_agents.grid(row=0, column=0)
+
         # Lieutenant
-        cadre_lieutenant = Frame(self.cadre_nouveau_quart, bd=3, relief='ridge')
+        cadre_lieutenant = Frame(self.cadre_nouveau_quart, bd=3, relief="ridge")
         label_lieutenant = Label(cadre_lieutenant, text="Lieutenant", font=("Arial", 13, "bold"))
-        #label_nom_lieutenant = Label(cadre_lieutenant, text="Nom : ")
-        #self.entree_nom_lieutenant = Entry(cadre_lieutenant, width=20)
-        #label_indicatif_lieutenant = Label(cadre_lieutenant, text="Indicatif : ")
-        #self.entree_indicatif_lieutenant = Entry(cadre_lieutenant, width=20)
         cadre_couleurs = Frame(cadre_lieutenant)
         self.valeur_couleur = StringVar()
         self.valeur_couleur.set("gris")
@@ -179,10 +177,6 @@ class Nouveau_quart(Tk):
         cadre_lieutenant.grid(columnspan=4, row=0, column=0, padx=5, pady=5)
         label_lieutenant.grid(row=0, column=0, padx=5, pady=5)
         self.entree_lieutenant.grid(row=1, column=0, padx=5, pady=5)
-        #label_nom_lieutenant.grid(columnspan=2, row=1, column=0, sticky=W, padx=5, pady=5)
-        #self.entree_nom_lieutenant.grid(columnspan=4, row=1, column=2, padx=5, pady=5)
-        #label_indicatif_lieutenant.grid(columnspan=2, row=2, column=0, sticky=W, padx=5, pady=5)
-        #self.entree_indicatif_lieutenant.grid(columnspan=3, row=2, column=3, padx=5, pady=5)
         cadre_couleurs.grid(row=3, column=0)
 
         numero = 0
@@ -200,6 +194,9 @@ class Nouveau_quart(Tk):
         bouton_ok = Button(cadre_bouton, text="Nouveau quart", command=self.nouvelle_fenetre_quart, width=60)
         bouton_ok.grid(padx=5, pady=5, sticky=W)
 
+    def gestion_agents(self):
+        GestionAgents(self)
+
     def nouvelle_fenetre_quart(self):
         nb_pat = 0
         patrouilleurs = {
@@ -208,7 +205,6 @@ class Nouveau_quart(Tk):
             "206": None,
             "207": None
         }
-        #lieutenant = Agent(self.entree_nom_lieutenant.get(), "Lieutenant(e)", self.entree_indicatif_lieutenant.get())
         erreur = False
         try:
             lieutenant = self.liste_agents[self.entree_lieutenant.get(self.entree_lieutenant.curselection())]
@@ -251,7 +247,7 @@ class Nouveau_quart(Tk):
         for agent in chaine.split("\n"):
             nom, titre, indicatif = agent.split(",")
             agent = Agent(nom, titre, indicatif)
-            self.liste_agents[agent.afficher_agent()] = agent
+            self.liste_agents[agent.afficher_sans_titre()] = agent
 
     def afficher_message(self, titre, message):
         """Affiche un message d'une certaine couleur en-dessous du damier.
@@ -268,15 +264,13 @@ class CadrePatrouilleur(Frame):
 
         #Création objets
         self.cadre = Frame(cadre_parent, height=500, width=400, bd=3, relief='ridge', bg=couleur1)
-        self.cadre.grid_propagate(0)
+        #self.cadre.grid_propagate(0)
         self.cadre_position = Frame(self.cadre, bd=3, relief="ridge", bg=couleur2, width=353, height=40)
         self.cadre_logs = Frame(self.cadre, bd=1, relief='ridge', bg=couleur2, width=353, height=342)
         self.labels_logs_precedents = []
 
+        self.label_nom = Label(self.cadre, text=agent.afficher_avec_titre(), bg=couleur1, font=("Arial", 14, "bold"))
         self.label_poste = Label(self.cadre, text=poste, bg=couleur1, font=("Arial", 20, "bold"))
-        self.label_titre = Label(self.cadre, text=agent.titre, bg=couleur1, font=("Arial", 14, "bold"))
-        self.label_nom = Label(self.cadre, text=agent.nom, bg=couleur1, font=("Arial", 14, "bold"))
-        self.label_indicatif = Label(self.cadre, text=agent.indicatif, bg=couleur1, font=("Arial", 14, "bold"))
 
         self.position_actuelle = Label(self.cadre_position)
         self.heure_position = Entry(self.cadre_position)
@@ -299,9 +293,11 @@ class CadrePatrouilleur(Frame):
 
         self.cadre_logs.columnconfigure(0, weight=1)
         self.cadre_logs.columnconfigure(2, weight=1)
-        self.cadre_logs.columnconfigure(4, weight=1)
-        self.cadre_logs.columnconfigure(6, weight=1)
-        self.cadre_logs.columnconfigure(8, weight=1)
+
+        self.cadre.columnconfigure(0, weight=1)
+        self.cadre.columnconfigure(2, weight=1)
+        self.cadre.columnconfigure(4, weight=1)
+        self.cadre.columnconfigure(6, weight=1)
 
         self.position_actuelle.config(text="Début de quart", bg=couleur2, font=("Arial", 13, "bold"))
         self.heure_position.config(bd=0, bg=couleur2, font=("Arial", 13, "bold"), width=6, justify=CENTER)
@@ -309,14 +305,12 @@ class CadrePatrouilleur(Frame):
 
         #Grid objets
         self.cadre.grid(row=4, column=colonne, sticky=NSEW)
-        self.label_poste.grid(row=0, column=1, padx=5, pady=10)
-        self.label_titre.grid(row=1, column=0, padx=5, pady=10)
-        self.label_nom.grid(row=1, column=1, padx=5, pady=10)
-        self.label_indicatif.grid(row=1, column=2, padx=5, pady=10)
+        self.label_poste.grid(row=0, column=0, padx=5, pady=5)
+        self.label_nom.grid(row=1, column=0, padx=5, pady=5)
 
-        self.cadre_logs.grid(row=4, columnspan=3, column=0, padx=5)
+        self.cadre_logs.grid(row=4, column=0, padx=5)
         self.cadre_logs.grid_propagate(0)
-        self.cadre_position.grid(columnspan=3, row=3, column=0, padx=5)
+        self.cadre_position.grid(row=3, column=0, padx=5)
         self.cadre_position.grid_propagate(0)
 
         self.position_actuelle.grid(row=1, column=1, padx=5, pady=5)
@@ -545,9 +539,9 @@ class Fenetre(Tk):
         super().__init__()
         #Quart courant
         self.quart = quart
-        if self.quart.nb_patrouilleurs == 0:
-            self.afficher_message("Aucun patrouilleur!", "Vous n'avez ajouté aucun patrouilleur!")
-            Nouveau_quart()
+        #if self.quart.nb_patrouilleurs == 0:
+            #self.afficher_message("Aucun patrouilleur!", "Vous n'avez ajouté aucun patrouilleur!")
+            #Nouveau_quart()
             #self.destroy()
         largeur = 600 + self.quart.nb_patrouilleurs*400
         self.title("Gestion des logs")
@@ -570,12 +564,13 @@ class Fenetre(Tk):
 
         # Création des cadres pour les patrouilleurs
         self.dessiner_cadres(self.cadre_quart)
+
         #Et pour les boutons
         self.cadre_logs = CadreLogs(self, self.cadre_quart, self.quart.nb_patrouilleurs)
 
         # On crée le menu
-        menu_jeu = Menu(self)
-        menu_principal = Menu(menu_jeu, tearoff=0)
+        menu_logs = Menu(self)
+        menu_principal = Menu(menu_logs, tearoff=0)
         #nouveau_quart = lambda: self.nouveau_quart_quitter()
         sauvegarder_quart = lambda: self.sauvegarder_quart(True)
         #charger_quart = lambda: self.charger_quart()
@@ -590,24 +585,32 @@ class Fenetre(Tk):
         menu_principal.add_command(label="Voir tous les logs", command=logs_effectues)
         menu_principal.add_command(label="Options", command=options)
         menu_principal.add_command(label="Quitter", command=self.quit)
-        menu_jeu.add_cascade(label="Menu", menu=menu_principal)
-        self.config(menu=menu_jeu)
+        menu_logs.add_cascade(label="Quart", menu=menu_principal)
+        self.config(menu=menu_logs)
+
+        #Deuxième onglet
+        menu_donnees = Menu(menu_logs, tearoff=0)
+
+        #menu_donnees.add_command(label="Gestion des agents", command=self.gerer_agents)
+        #menu_donnees.add_command(label="Gestion des logs", command=self.gerer_logs)
+        menu_logs.add_cascade(label="Gestion des données", menu=menu_donnees)
+        self.config(menu=menu_logs)
+
+    #def gerer_logs(self):
+
 
     def dessiner_cadres(self, cadre_quart):
         """Initialise un quart avec les cadres pour chaque patrouilleur. Dépend du nombre de patrouilleurs.
         """
         cadre_lieutenant = Frame(cadre_quart, bd=3, relief='ridge', bg=self.quart.couleur_lieutenant)
-        label_lieutenant = Label(cadre_lieutenant, text=self.quart.id_lieutenant.titre + " : ", bg=self.quart.couleur_lieutenant,
+        label_lieutenant = Label(cadre_lieutenant, text=self.quart.id_lieutenant.titre, bg=self.quart.couleur_lieutenant,
                                  font=("Arial", 14, "bold"))
-        label_nom_lieutenant = Label(cadre_lieutenant, text=self.quart.id_lieutenant.nom,
-                                     bg=self.quart.couleur_lieutenant, font=("Arial", 14, "bold"))
-        label_indicatif = Label(cadre_lieutenant, text=self.quart.id_lieutenant.indicatif,
+        label_agent = Label(cadre_lieutenant, text=self.quart.id_lieutenant.afficher_sans_titre(),
                                 bg=self.quart.couleur_lieutenant, font=("Arial", 14, "bold"))
         if self.quart.nb_patrouilleurs !=0:
             cadre_lieutenant.grid(columnspan=self.quart.nb_patrouilleurs, row=0, column=0, padx=10, pady=10)
         label_lieutenant.grid(row=0, column=1)
-        label_nom_lieutenant.grid(row=0, column=2, sticky=N)
-        label_indicatif.grid(row=0, column=3)
+        label_agent.grid(row=0, column=3)
 
         colonne = 0
         for pat in sorted(self.quart.id_patrouilleurs):
@@ -617,15 +620,6 @@ class Fenetre(Tk):
                                                                    self.quart.id_patrouilleurs[pat].theme[0],
                                                                    self.quart.id_patrouilleurs[pat].theme[1])
                 colonne += 1
-
-    def dessiner_boutons_cote(self, cadre):
-        cadre_boutons_cote = Frame(cadre)
-        cadre_boutons_cote.grid(row=6, column=self.quart.nb_patrouilleurs)
-
-        bouton_piste = self.creer_bouton_log("Piste", cadre_boutons_cote, 7)
-        bouton_ville = self.creer_bouton_log("Ville", cadre_boutons_cote, 7)
-        bouton_piste.grid(row=0, column=0, padx=10, pady=10)
-        bouton_piste.grid(row=0, column=1, padx=10, pady=10)
 
     def nouveau_quart_quitter(self):
         """ Initialise une fenêtre de nouveau quart avec les attributs de quart courant.
@@ -644,7 +638,7 @@ class Fenetre(Tk):
     def tous_les_logs(self):
         """Crée une instance de la classeTous_les_logs.
         """
-        Tous_les_logs()
+        TousLesLogs()
 
     def annuler_dernier_log(self):
         """ Déplace la dernière pièce déplacée à sa position d'origine.
