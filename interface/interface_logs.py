@@ -1,6 +1,6 @@
 __author__ = 'Gabrielle Martin-Fortier'
 
-from tkinter import Tk, Label, Entry, Checkbutton, Button, W, N, Listbox, Frame, NSEW, Menu, filedialog, Radiobutton, StringVar, END, CENTER
+from tkinter import Tk, Label, Entry, Checkbutton, Button, W, Listbox, Frame, NSEW, Menu, filedialog, Radiobutton, StringVar, END, CENTER, LEFT
 from logs.log import Log
 from logs.agent import Agent
 from logs.exceptions import ErreurDeplacement, ErreurPositionCible, ErreurPositionSource, PieceInexistante
@@ -77,12 +77,7 @@ class Cadre_nouveau_patrouilleur(Frame):
 
         label_pat.grid(row=1, column=1, sticky=W)
         bouton.grid(row=1, column=3, sticky=W, padx=5, pady=5)
-        #self.entree_nom.grid(row=3, column=3, padx=5, pady=5, sticky=W)
-        #label_nom.grid(row=3, column=1, sticky=W, padx=5, pady=5)
-        #label_titre.grid(row=5, column=1, sticky=W)
         self.entree_agent.grid(row=5, column=3, padx=5, pady=5, sticky=W)
-        #label_indicatif.grid(row=7, column=1, sticky=W, padx=5, pady=5)
-        #self.entree_indicatif.grid(row=7, column=3, padx=5, pady=5, sticky=W)
         colonne = 1
         for couleur in self.boutons_couleurs:
             self.boutons_couleurs[couleur].grid(row=8, column=colonne, padx=2, pady=2)
@@ -222,11 +217,11 @@ class Nouveau_quart(Tk):
                         self.cadres_patrouilleurs[pat].valeur_couleur.get()])
                     nb_pat += 1
                 except:
+                    print(pat)
                     if not erreur:
                         self.afficher_message("Patrouilleurs anonymes",
                                               "L'un des patrouilleurs est activé mais n'a pas d'identité")
                         erreur = True
-                #agent = Agent(self.cadres_patrouilleurs[pat].entree_nom.get(), self.cadres_patrouilleurs[pat].entree_titre.get(self.cadres_patrouilleurs[pat].entree_titre.curselection()), self.cadres_patrouilleurs[pat].entree_indicatif.get())
 
         if nb_pat == 0 and not erreur:
             self.afficher_message("Aucun patrouilleur", "L'aéroport n'est pas très sécuritaire sans aucun patrouilleur!")
@@ -268,8 +263,7 @@ class CadrePatrouilleur(Frame):
 
         #Création objets
         self.cadre = Frame(cadre_parent, height=500, width=400, bd=3, relief='ridge', bg=couleur1)
-        #self.cadre.grid_propagate(0)
-        self.cadre_position = Frame(self.cadre, bd=3, relief="ridge", bg=couleur2, width=353, height=40)
+        self.cadre_position = Frame(self.cadre, bd=3, relief="ridge", bg=couleur2, width=353, height=60)
         self.cadre_logs = Frame(self.cadre, bd=1, relief='ridge', bg=couleur2, width=353, height=342)
         self.labels_logs_precedents = []
 
@@ -280,11 +274,6 @@ class CadrePatrouilleur(Frame):
         self.heure_position = Entry(self.cadre_position)
 
         #Configuration objets
-        #self.cadre.columnconfigure(0, weight=1)
-        #self.cadre.columnconfigure(2, weight=1)
-        #self.cadre.columnconfigure(4, weight=1)
-        #self.cadre.columnconfigure(6, weight=1)
-
         col = 0
         while col < 5:
             self.cadre_position.columnconfigure(col, weight=1)
@@ -298,10 +287,10 @@ class CadrePatrouilleur(Frame):
         self.cadre_logs.columnconfigure(0, weight=1)
         self.cadre_logs.columnconfigure(2, weight=1)
 
-        self.cadre.columnconfigure(0, weight=1)
-        self.cadre.columnconfigure(2, weight=1)
-        self.cadre.columnconfigure(4, weight=1)
-        self.cadre.columnconfigure(6, weight=1)
+        col = 0
+        while col < 7:
+            self.cadre.columnconfigure(col, weight=1)
+            col += 2
 
         self.position_actuelle.config(text="Début de quart", bg=couleur2, font=("Arial", 13, "bold"))
         self.heure_position.config(bd=0, bg=couleur2, font=("Arial", 13, "bold"), width=6, justify=CENTER)
@@ -337,7 +326,7 @@ class CadreLogs:
         self.valeur_boutons = {
             "patrouilleurs": [],
             "terminal_exterieur": None,
-            "cote": None,
+            "cote": None
         }
 
         self.cadres_par_section = {
@@ -346,7 +335,8 @@ class CadreLogs:
             "cote": Frame(self.cadre, height=hauteur, width=largeur, relief="groove", bd=1),
             "logs_terminal": Frame(self.cadre, height=hauteur*5.3, width=largeur, relief="groove", bd=1),
             "logs_exterieur_ville": Frame(self.cadre, height=hauteur * 5.3, width=largeur, relief="groove", bd=1),
-            "logs_exterieur_piste": Frame(self.cadre, height=hauteur * 5.3, width=largeur, relief="groove", bd=1)
+            "logs_exterieur_piste": Frame(self.cadre, height=hauteur * 5.3, width=largeur, relief="groove", bd=1),
+            "note": Frame(self.cadre, height=hauteur * 5.3, width=largeur, relief="groove", bd=1)
         }
 
         self.boutons_par_section = {
@@ -355,7 +345,8 @@ class CadreLogs:
             "cote": {},
             "logs_terminal": {},
             "logs_exterieur_ville": {},
-            "logs_exterieur_piste": {}
+            "logs_exterieur_piste": {},
+            "note": {}
         }
 
         self.logs_par_section = {
@@ -394,6 +385,15 @@ class CadreLogs:
         for type in self.types_logs:
             self.creation_boutons_logs(type)
 
+        #Création entrée note
+        self.boutons_par_section["note"]["note"] = Entry(self.cadres_par_section["note"], font=("Arial", 13))
+        self.boutons_par_section["note"]["label"] = Label(self.cadres_par_section["note"], font=("Arial", 13, "bold"),
+                                                          text="Note : ")
+        self.cadres_par_section["note"].columnconfigure(0, weight=1)
+        self.cadres_par_section["note"].columnconfigure(3, weight=1)
+        self.boutons_par_section["note"]["label"].grid(row=0, column=1, padx=5, pady=5)
+        self.boutons_par_section["note"]["note"].grid(row=0, column=2, padx=5, pady=5)
+
     def repartir_boutons(self, section):
         colonne = 1
         col_log = 1
@@ -422,7 +422,6 @@ class CadreLogs:
         self.cadres_par_section[section].grid_rowconfigure(par_deux + 2, weight=1)
 
     def choisir_section_log(self):
-        section = ""
         if self.valeur_boutons["terminal_exterieur"] == "Terminal":
             section = "logs_terminal"
         elif self.valeur_boutons["terminal_exterieur"] == "Exterieur" and self.valeur_boutons["cote"] == "Piste":
@@ -436,7 +435,7 @@ class CadreLogs:
     def afficher_section(self, section):
         if section == "logs":
             section = self.choisir_section_log()
-        sections = ["patrouilleurs", "terminal_exterieur", "cote"] + self.types_logs
+        sections = ["patrouilleurs", "terminal_exterieur", "cote"] + self.types_logs + ["note"]
         self.cadres_par_section[section].grid(row=sections.index(section), column=0, sticky=NSEW)
         self.cadres_par_section[section].grid_propagate(0)
 
@@ -466,19 +465,23 @@ class CadreLogs:
 
         else:
             self.fenetre.creer_log(self.valeur_boutons["patrouilleurs"], self.valeur_boutons["terminal_exterieur"],
-                                        self.valeur_boutons["cote"], bouton)
+                                        self.valeur_boutons["cote"], bouton, self.boutons_par_section["note"]["note"].get())
+
             self.all_clear("patrouilleurs")
             self.all_clear("terminal_exterieur")
             self.all_clear("cote")
+            self.all_clear("note")
 
         #Ensuite on ajuste les sections à afficher selon les valeurs courantes
 
         if section not in self.types_logs:
             self.cacher_section("logs")
             self.afficher_section("logs")
+            self.afficher_section("note")
 
         else:
             self.cacher_section("logs")
+            self.cacher_section("note")
             self.cacher_section("cote")
             self.valeur_boutons["terminal_exterieur"] = None
             self.valeur_boutons["patrouilleurs"] = []
@@ -490,6 +493,7 @@ class CadreLogs:
 
         if self.valeur_boutons["terminal_exterieur"] is None or (self.valeur_boutons["terminal_exterieur"] == "Exterieur" and self.valeur_boutons["cote"] is None):
             self.cacher_section("logs")
+            self.cacher_section("note")
             self.boutons_par_section["logs"] = {}
 
     def cacher_section(self, section):
@@ -503,8 +507,12 @@ class CadreLogs:
 
 
     def all_clear(self, section):
-        for bouton in self.boutons_par_section[section].values():
-            self.relacher_bouton(bouton)
+        if section != "note":
+            for bouton in self.boutons_par_section[section].values():
+                self.relacher_bouton(bouton)
+        else:
+            self.valeur_boutons["note"] = ""
+            self.boutons_par_section["note"]["note"].delete(0, END)
 
     def enfoncer_bouton(self, bouton):
         bouton.config(relief="sunken", bg="SteelBlue1")
@@ -664,9 +672,9 @@ class Fenetre(Tk):
         """
         Options(self)
 
-    def creer_log(self, patrouilleurs, terminal_exterieur, cote, log):
+    def creer_log(self, patrouilleurs, terminal_exterieur, cote, log, note):
         heure = datetime.datetime.now().strftime("%H:%M")
-        nouveau_log = Log(heure, None, terminal_exterieur, cote, log)
+        nouveau_log = Log(heure, None, terminal_exterieur, cote, log, note)
         for pats in self.quart.id_patrouilleurs:
             if self.quart.id_patrouilleurs[pats] is not None:
                 self.quart.id_patrouilleurs[pats].position.heure_debut = self.cadres_patrouilleurs[pats].heure_position.get()
@@ -752,6 +760,7 @@ class Fenetre(Tk):
                 self.cadres_patrouilleurs[patrouilleur].cadre_logs,
                 text=texte,
                 bg=self.quart.id_patrouilleurs[patrouilleur].theme[1],
+                justify=CENTER,
                 font=("Arial", 12)))
 
     def sauvegarder_quart(self, demander_nom_fichier):
@@ -773,7 +782,6 @@ class Fenetre(Tk):
             f = open(fichier, 'r')
             self.quart.charger_dune_chaine(f.read())
             self.nouveau_quart_quitter()
-        fichier.close()
 
     def afficher_message(self, titre, message):
         """Affiche un message d'une certaine couleur en-dessous du damier.

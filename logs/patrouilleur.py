@@ -52,7 +52,7 @@ class Patrouilleur:
 
     def convertir_en_chaine(self):
         chaine = "{}\n{},{},{}\n{}\n".format(self.poste, self.agent.convertir_en_chaine(),
-                                           self.theme[0], self.theme[1], self.position.convertir_en_chaine())
+                                             self.theme[0], self.theme[1], self.position.convertir_en_chaine())
         for log in self.logs:
             chaine += "{}\n".format(log.convertir_en_chaine())
 

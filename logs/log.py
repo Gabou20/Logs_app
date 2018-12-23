@@ -14,7 +14,7 @@ class Log:
 
     """
 
-    def __init__(self, heure_debut=None, heure_fin=None, terminal_exterieur=None, cote=None, log=None):
+    def __init__(self, heure_debut=None, heure_fin=None, terminal_exterieur=None, cote=None, log=None, note=""):
         """Constructeur de la classe Log. Initialise les cinq attributs de la classe.
 
         Args:
@@ -25,7 +25,7 @@ class Log:
         self.terminal_exterieur = terminal_exterieur
         self.cote = cote
         self.log = log
-        self.note = None
+        self.note = note
 
     def afficher_log(self):
         """Méthode servant à afficher les informations du log de façon concise dans la fenêtre du patrouilleur.
@@ -42,13 +42,18 @@ class Log:
             texte += "Terminal : "
 
         texte += self.log
+
+        if self.note != "":
+            texte += "\n"
+            texte += self.note
+
         return texte
 
     def convertir_en_chaine(self):
-        chaine = "{},{},{},{},{}".format(self.heure_debut, self.heure_fin,
-                                            self.terminal_exterieur, self.cote, self.log)
+        chaine = "{},{},{},{},{},{}".format(self.heure_debut, self.heure_fin,
+                                            self.terminal_exterieur, self.cote, self.log, self.note)
 
         return chaine
 
     def charger_dune_chaine(self, chaine):
-        self.heure_debut, self.heure_fin, self.terminal_exterieur, self.cote, self.log = chaine.split(",")
+        self.heure_debut, self.heure_fin, self.terminal_exterieur, self.cote, self.log, self.note = chaine.split(",")
