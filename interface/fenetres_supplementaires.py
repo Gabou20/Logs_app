@@ -6,6 +6,7 @@ from logs.log import Log
 from random import choice
 from time import sleep
 from logs.agent import Agent
+import os
 
 class FinQuart(Tk):
     """ Fenêtre s'ouvrant à la fin d'une partie de dames. Offre trois actions : nouvelle partie, revoir la partie et
@@ -67,50 +68,92 @@ class GestionAgents(Tk):
         self.resizable(0, 0)
         self.title("Gestion des agents")
         self.grid_columnconfigure(0, weight=1)
-        self.grid_columnconfigure(2, weight=1)
+        self.grid_columnconfigure(2, weight=1, minsize=10)
         self.grid_columnconfigure(4, weight=1)
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(2, weight=1)
         self.fenetre = fenetre
 
-        cadre_supprimer_modifier = Frame(self, relief="ridge", bd=2)
-        cadre_ajouter = Frame(self, relief="ridge")
+        bouton_termine = Button(self, text="Terminé", font=("Arial", 13, "bold"), command=self.destroy)
+        bouton_termine.grid(row=2, column=0, columnspan=5, padx=5, pady=5)
 
-        cadre_ajouter.grid(row=1, column=1)
-        cadre_supprimer_modifier.grid(row=1, column=3)
+        cadre_supprimer = Frame(self, relief="ridge", bd=2)
+        cadre_ajouter = Frame(self, relief="ridge", bd=2)
+
+        cadre_ajouter.grid(row=1, column=1, padx=10, pady=10)
+        cadre_supprimer.grid(row=1, column=3, padx=10, pady=10)
 
         label_nom = Label(cadre_ajouter, text=" Nom : ", font=("Arial", 13, "bold"))
-        entree_nom = Entry(cadre_ajouter, width=15, font=("Arial", 13))
+        self.entree_nom = Entry(cadre_ajouter, width=15, font=("Arial", 13))
         label_titre = Label(cadre_ajouter, text="  Titre : ", font=("Arial", 13, "bold"))
-        entree_titre = Listbox(cadre_ajouter, height=3, exportselection=0, font=("Arial", 13), width=15)
+        self.entree_titre = Listbox(cadre_ajouter, height=3, exportselection=0, font=("Arial", 13), width=15)
         label_indicatif = Label(cadre_ajouter, text="Indicatif : ", font=("Arial", 13, "bold"))
-        entree_indicatif = Entry(cadre_ajouter, width=15, font=("Arial", 13))
-        nouvel_agent = lambda: self.nouvel_agent(entree_nom.get(),
-                                            entree_titre.get(entree_titre.curselection()), entree_indicatif.get())
-        bouton_ajouter = Button(cadre_ajouter, text="Ajouter agent", font=("Arial", 13, "bold"), command=nouvel_agent)
+        self.entree_indicatif = Entry(cadre_ajouter, width=15, font=("Arial", 13))
+
+        self.agent_a_supprimer = Listbox(cadre_supprimer, height=6, exportselection=0,
+                                             font=("Arial", 13), width=20)
+        for agent_sup in sorted(self.fenetre.liste_agents, reverse=True):
+            self.agent_a_supprimer.insert(0, agent_sup)
+
+        supprimer_agent = lambda: self.supprimer_agent(self.agent_a_supprimer.get(self.agent_a_supprimer.curselection()))
+        bouton_ajouter = Button(cadre_ajouter, text="Ajouter agent", font=("Arial", 13, "bold"), command=self.nouvel_agent)
+        bouton_supprimer = Button(cadre_supprimer, text="Supprimer agent", font=("Arial", 13, "bold"), command=supprimer_agent)
+
         for item in ["Lieutenante", "Lieutenant", "Sergente", "Sergent", "Agente", "Agent"]:
-            entree_titre.insert(0, item)
-        entree_titre.select_set(0)
-        entree_nom.grid(row=3, column=3, padx=5, pady=5, sticky=W)
+            self.entree_titre.insert(0, item)
+        self.entree_nom.grid(row=3, column=3, padx=5, pady=5, sticky=W)
         label_nom.grid(row=3, column=1, sticky=W, padx=5, pady=5)
         label_titre.grid(row=6, column=1, sticky=W)
         label_indicatif.grid(row=9, column=1, sticky=W, padx=5, pady=5)
-        entree_titre.grid(row=5, column=3, rowspan=3)
-        entree_indicatif.grid(row=9, column=3, padx=5, pady=5, sticky=W)
+        self.entree_titre.grid(row=5, column=3, rowspan=3)
+        self.entree_indicatif.grid(row=9, column=3, padx=5, pady=5, sticky=W)
         bouton_ajouter.grid(row=10, column=1, padx=5, pady=5, columnspan=3)
 
-    def nouvel_agent(self, nom, titre, indicatif):
-        agent = Agent(nom, titre, indicatif)
-        self.fenetre.liste_agents[agent.afficher_sans_titre()] = agent
+        self.agent_a_supprimer.grid(row=1, column=1, padx=5, pady=5)
+        bouton_supprimer.grid(row=10, column=1, padx=5, pady=5, columnspan=1)
 
+    def nouvel_agent(self):
+        try:
+            agent = Agent(self.entree_nom.get(),
+                          self.entree_titre.get(self.entree_titre.curselection()),
+                          self.entree_indicatif.get())
+            if agent.afficher_sans_titre() in self.fenetre.liste_agents.values():
+                Message("Agent existe déjà", "Cet agent est déjà dans la liste!")
+            else:
+                self.agent_a_supprimer.insert(END, agent.afficher_sans_titre())
+                self.fenetre.liste_agents[agent.afficher_sans_titre()] = agent
+                self.entree_nom.delete(0, END)
+                self.entree_indicatif.delete(0, END)
+                self.entree_titre.selection_clear(0, END)
+
+                for cadre in self.fenetre.cadres_patrouilleurs.values():
+                    cadre.entree_agent.insert(END, agent.afficher_sans_titre())
+                self.fenetre.entree_lieutenant.insert(END, agent.afficher_sans_titre())
+                with open("agents.txt", "a") as f:
+                    f.write("\n")
+                    f.writelines(agent.convertir_en_chaine())
+                f.close()
+        except:
+            Message("Erreur", "Vous devez remplir tous les champs")
+
+    def supprimer_agent(self, agent):
         for cadre in self.fenetre.cadres_patrouilleurs.values():
-            cadre.entree_agent.insert(END, agent.afficher_sans_titre())
-        self.fenetre.entree_lieutenant.insert(END, agent.afficher_sans_titre())
-        with open("agents.txt", "a") as f:
-            f.write("\n")
-            f.writelines(agent.convertir_en_chaine())
-        self.destroy()
+            cadre.entree_agent.delete(cadre.entree_agent.get(0, END).index(agent))
+        self.fenetre.entree_lieutenant.delete(self.fenetre.entree_lieutenant.get(0, END).index(agent))
+        self.agent_a_supprimer.delete(self.agent_a_supprimer.curselection())
 
+        with open("agents.txt", "r") as f:
+            lignes = f.readlines()
+            if lignes[-1] == self.fenetre.liste_agents[agent].convertir_en_chaine():
+                lignes[-2] = lignes[-2][:-1]
+        f.close()
+
+        with open("agents.txt", "w") as f:
+            for ligne in lignes:
+                if ligne not in [self.fenetre.liste_agents[agent].convertir_en_chaine() + "\n",
+                                 self.fenetre.liste_agents[agent].convertir_en_chaine(), "\n"]:
+                    f.write(ligne)
+        f.close()
 
 class Options(Tk):
     """ Crée la fenêtre d'options d'un jeu de dames.

@@ -191,7 +191,8 @@ class Nouveau_quart(Tk):
 
         cadre_bouton = Frame(self.cadre_nouveau_quart)
         cadre_bouton.grid(columnspan=4, row=3, column=0)
-        bouton_ok = Button(cadre_bouton, text="Nouveau quart", command=self.nouvelle_fenetre_quart, width=60)
+        bouton_ok = Button(cadre_bouton, text="Nouveau quart", command=self.nouvelle_fenetre_quart, width=60,
+                           font=("Arial", 13, "bold"))
         bouton_ok.grid(padx=5, pady=5, sticky=W)
 
     def gestion_agents(self):
@@ -244,10 +245,13 @@ class Nouveau_quart(Tk):
     def charger_agents(self):
         fichier = open("agents.txt", 'r')
         chaine = fichier.read()
-        for agent in chaine.split("\n"):
-            nom, titre, indicatif = agent.split(",")
-            agent = Agent(nom, titre, indicatif)
-            self.liste_agents[agent.afficher_sans_titre()] = agent
+        if chaine != "":
+            for agent in chaine.split("\n"):
+                if agent !="":
+                    nom, titre, indicatif = agent.split(",")
+                    agent = Agent(nom, titre, indicatif)
+                    self.liste_agents[agent.afficher_sans_titre()] = agent
+        fichier.close()
 
     def afficher_message(self, titre, message):
         """Affiche un message d'une certaine couleur en-dessous du damier.
@@ -769,19 +773,7 @@ class Fenetre(Tk):
             f = open(fichier, 'r')
             self.quart.charger_dune_chaine(f.read())
             self.nouveau_quart_quitter()
-
-            #f.readline()
-            #dimensions = [int(f.readline()), int(f.readline()), int(f.readline())]
-            #self.nouvelle_partie(dimensions[0], dimensions[1], dimensions[2], self.delai,
-                                 #self.nom_joueur_blanc, self.nom_joueur_noir, self.afficher_sources)
-            #self.partie.charger(fichier)
-            #self.partie.damier.liste_mouvements = []
-            #self.attente_clic = True
-            #self.nombre_prises_par_tour = [0]
-            #self.partie.numero_tour = 0
-            #self.canvas_damier.delete(self, 'piece')
-            #self.canvas_damier.dessiner_pieces()
-            #self.afficher_couleur_courante()
+        fichier.close()
 
     def afficher_message(self, titre, message):
         """Affiche un message d'une certaine couleur en-dessous du damier.

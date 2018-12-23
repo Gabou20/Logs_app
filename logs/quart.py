@@ -140,3 +140,4 @@ class Quart:
         """
         with open(nom_fichier, "w") as f:
             f.writelines(self.convertir_en_chaine())
+        f.close()
