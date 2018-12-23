@@ -20,7 +20,7 @@ class Quart:
         dernier_pat_log (Patrouilleur) : Le dernier patrouilleur à avoir eu un log
     """
 
-    def __init__(self, id_lieutenant, couleur_lieutenant, nb_patrouilleurs=3, id_204=None, id_205=None, id_206=None, id_207=None):
+    def __init__(self, id_lieutenant=Agent("", "", ""), couleur_lieutenant="chartreuse", nb_patrouilleurs=1, id_204=None, id_205=None, id_206=None, id_207=None):
         """Constructeur du Damier. Initialise un damier initial de 8 lignes par 8 colonnes.
 
         Args:

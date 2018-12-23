@@ -111,6 +111,7 @@ class Nouveau_quart(Tk):
             "206": Cadre_nouveau_patrouilleur(2, self.cadre_nouveau_quart, "206", activer_206, self.liste_agents),
             "207": Cadre_nouveau_patrouilleur(3, self.cadre_nouveau_quart, "207", activer_207, self.liste_agents)
         }
+
         self.patrouilleurs_actifs = {
             "204": False,
             "205": False,
@@ -150,9 +151,13 @@ class Nouveau_quart(Tk):
 
         bouton_gestion_agents = Button(cadre_options, text="Gestion des agents",
                                        font=("Arial", 13, "bold"),
-                                       command=self.gestion_agents)
+                                       command=self.charger_quart)
+        bouton_charger_quart = Button(cadre_options, text="Charger un quart",
+                                      font=("Arial", 13, "bold"),
+                                      command=self.charger_quart)
 
         bouton_gestion_agents.grid(row=0, column=0)
+        bouton_charger_quart.grid(row=1, column=0)
 
         # Lieutenant
         cadre_lieutenant = Frame(self.cadre_nouveau_quart, bd=3, relief="ridge")
@@ -257,6 +262,21 @@ class Nouveau_quart(Tk):
         """
         Message(titre, message)
 
+    def charger_quart(self):
+        fichier = filedialog.askopenfilename(parent=self, defaultextension='txt', title='Charger un quart')
+        if fichier != "":
+            with open(fichier, "r") as f:
+                quart = Quart()
+                quart.charger_dune_chaine(f.read())
+                fenetre = Fenetre(quart)
+                for pat in fenetre.quart.id_patrouilleurs:
+                    if fenetre.quart.id_patrouilleurs[pat] is not None:
+                        logs = fenetre.quart.id_patrouilleurs[pat].logs
+                        fenetre.quart.id_patrouilleurs[pat].logs = []
+                        for log in logs:
+                            fenetre.creer_log_existant(pat, log)
+            f.close()
+        self.destroy()
 
 class CadrePatrouilleur(Frame):
     def __init__(self, colonne, cadre_parent, poste, agent, couleur1, couleur2):
@@ -583,10 +603,7 @@ class Fenetre(Tk):
         # On crée le menu
         menu_logs = Menu(self)
         menu_principal = Menu(menu_logs, tearoff=0)
-        #nouveau_quart = lambda: self.nouveau_quart_quitter()
         sauvegarder_quart = lambda: self.sauvegarder_quart(True)
-        #charger_quart = lambda: self.charger_quart()
-        #annuler_dernier_log = lambda: self.annuler_dernier_log()
         logs_effectues = lambda: self.nouveau_quart_quitter()
         options = lambda: self.nouveau_quart_quitter()
 
@@ -644,8 +661,8 @@ class Fenetre(Tk):
                 f.quart.id_patrouilleurs[pat].logs = []
                 for log in logs:
                     f.creer_log_existant(pat, log)
-
         self.destroy()
+
 
     def tous_les_logs(self):
         """Crée une instance de la classeTous_les_logs.
@@ -774,14 +791,15 @@ class Fenetre(Tk):
         if fichier != "":
             self.quart.sauvegarder(fichier)
 
-    def charger_quart(self):
+    def charger_quart(self, fichier=None):
         """ Ouvre une fenêtre qui demande la partie à charger et charge cette partie.
         """
-        fichier = filedialog.askopenfilename(parent=self, defaultextension='txt', title='Charger une partie')
+        if fichier is None:
+            fichier = filedialog.askopenfilename(parent=self, defaultextension='txt', title='Charger une partie')
         if fichier != "":
-            f = open(fichier, 'r')
-            self.quart.charger_dune_chaine(f.read())
-            self.nouveau_quart_quitter()
+            with open(fichier, 'r+') as f:
+                self.quart.charger_dune_chaine(f.read())
+                self.nouveau_quart_quitter()
 
     def afficher_message(self, titre, message):
         """Affiche un message d'une certaine couleur en-dessous du damier.
