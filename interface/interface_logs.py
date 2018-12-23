@@ -40,7 +40,7 @@ class Cadre_nouveau_patrouilleur(Frame):
 
         self.cadre_pat = Frame(self.cadre)
         label_pat = Label(self.cadre_pat, text="Patrouilleur "+patrouilleur, font=("Arial", 13, "bold"))
-        bouton = Checkbutton(self.cadre_pat, command=commande)
+        self.bouton = Checkbutton(self.cadre_pat, command=commande)
         self.entree_agent = Listbox(self.cadre, height=5, width=18, exportselection=0, yscrollcommand=1, font=("Arial", 13))
         for item in sorted(agents, reverse=True):
             self.entree_agent.insert(0, item)
@@ -76,7 +76,7 @@ class Cadre_nouveau_patrouilleur(Frame):
         self.cadre_pat.grid(columnspan=5, row=0, column=1)
 
         label_pat.grid(row=1, column=1, sticky=W)
-        bouton.grid(row=1, column=3, sticky=W, padx=5, pady=5)
+        self.bouton.grid(row=1, column=3, sticky=W, padx=5, pady=5)
         self.entree_agent.grid(row=5, column=3, padx=5, pady=5, sticky=W)
         colonne = 1
         for couleur in self.boutons_couleurs:
@@ -104,6 +104,14 @@ class Nouveau_quart(Tk):
         activer_205 = lambda: self.options_dans_attributs("205")
         activer_206 = lambda: self.options_dans_attributs("206")
         activer_207 = lambda: self.options_dans_attributs("207")
+
+        self.liste_equipes = {
+            "A": {},
+            "B": {},
+            "C": {},
+            "D": {}
+        }
+        self.charger_equipes()
 
         self.cadres_patrouilleurs = {
             "204": Cadre_nouveau_patrouilleur(0, self.cadre_nouveau_quart, "204", activer_204, self.liste_agents),
@@ -149,15 +157,21 @@ class Nouveau_quart(Tk):
         cadre_options = Frame(self.cadre_nouveau_quart, bd=3, relief="ridge")
         cadre_options.grid(row=0, column=0)
 
+        equipeA = lambda: self.charger_equipe("A")
+
         bouton_gestion_agents = Button(cadre_options, text="Gestion des agents",
                                        font=("Arial", 13, "bold"),
                                        command=self.charger_quart)
         bouton_charger_quart = Button(cadre_options, text="Charger un quart",
                                       font=("Arial", 13, "bold"),
                                       command=self.charger_quart)
+        bouton_equipe_a = Button(cadre_options, text="Équipe A",
+                                      font=("Arial", 13, "bold"),
+                                      command=equipeA)
 
         bouton_gestion_agents.grid(row=0, column=0)
         bouton_charger_quart.grid(row=1, column=0)
+        bouton_equipe_a.grid(row=3, column=0)
 
         # Lieutenant
         cadre_lieutenant = Frame(self.cadre_nouveau_quart, bd=3, relief="ridge")
@@ -195,8 +209,51 @@ class Nouveau_quart(Tk):
                            font=("Arial", 13, "bold"))
         bouton_ok.grid(padx=5, pady=5, sticky=W)
 
+    def charger_equipes(self):
+        with open("equipes.txt", 'r') as fichier:
+            chaine = fichier.read()
+            postes = ["lieutenant", "205", "206", "207"]
+            if chaine != "":
+                equipe_courante = ""
+                for ligne in chaine.split("\n"):
+                    if ligne in ["A", "B", "C", "D"]:
+                        equipe_courante = ligne
+                        poste = 0
+                    elif ligne != "":
+                        nom, titre, indicatif = ligne.split(",")
+                        agent = Agent(nom, titre, indicatif)
+                        self.liste_equipes[equipe_courante][postes[poste]] = agent
+                        poste += 1
+        fichier.close()
+
     def gestion_agents(self):
         GestionAgents(self)
+
+    def charger_equipe(self, equipe):
+        lieutenant, a_205, a_206, a_207 = self.liste_equipes[equipe]["lieutenant"], self.liste_equipes[equipe]["205"], \
+                                          self.liste_equipes[equipe]["206"], self.liste_equipes[equipe]["207"]
+
+        index_205 = self.cadres_patrouilleurs["205"].entree_agent.get(0, END).index(a_205.afficher_sans_titre())
+        self.cadres_patrouilleurs["205"].entree_agent.select_set(index_205)
+        self.cadres_patrouilleurs["205"].entree_agent.see(index_205)
+        self.cadres_patrouilleurs["205"].bouton.select()
+        self.options_dans_attributs("205")
+
+        index_206 = self.cadres_patrouilleurs["206"].entree_agent.get(0, END).index(a_206.afficher_sans_titre())
+        self.cadres_patrouilleurs["206"].entree_agent.select_set(index_206)
+        self.cadres_patrouilleurs["206"].entree_agent.see(index_206)
+        self.cadres_patrouilleurs["206"].bouton.select()
+        self.options_dans_attributs("206")
+
+        index_207 = self.cadres_patrouilleurs["207"].entree_agent.get(0, END).index(a_207.afficher_sans_titre())
+        self.cadres_patrouilleurs["207"].entree_agent.select_set(index_207)
+        self.cadres_patrouilleurs["207"].entree_agent.see(index_207)
+        self.cadres_patrouilleurs["207"].bouton.select()
+        self.options_dans_attributs("207")
+
+        index_lieutenant = self.entree_lieutenant.get(0, END).index(lieutenant.afficher_sans_titre())
+        self.entree_lieutenant.select_set(index_lieutenant)
+        self.entree_lieutenant.see(index_lieutenant)
 
     def nouvelle_fenetre_quart(self):
         nb_pat = 0
