@@ -88,7 +88,7 @@ class GestionAgents(Tk):
         nouvel_agent = lambda: self.nouvel_agent(entree_nom.get(),
                                             entree_titre.get(entree_titre.curselection()), entree_indicatif.get())
         bouton_ajouter = Button(cadre_ajouter, text="Ajouter agent", font=("Arial", 13, "bold"), command=nouvel_agent)
-        for item in ["Lieutenant(e)", "Sergent(e)", "Agent(e"]:
+        for item in ["Lieutenante", "Lieutenant", "Sergente", "Sergent", "Agente", "Agent"]:
             entree_titre.insert(0, item)
         entree_titre.select_set(0)
         entree_nom.grid(row=3, column=3, padx=5, pady=5, sticky=W)
@@ -106,8 +106,10 @@ class GestionAgents(Tk):
         for cadre in self.fenetre.cadres_patrouilleurs.values():
             cadre.entree_agent.insert(END, agent.afficher_sans_titre())
         self.fenetre.entree_lieutenant.insert(END, agent.afficher_sans_titre())
+        with open("agents.txt", "a") as f:
+            f.write("\n")
+            f.writelines(agent.convertir_en_chaine())
         self.destroy()
-
 
 
 class Options(Tk):

@@ -17,3 +17,5 @@ Edouard, Agente, 46
 Houde P.-L., Agent, 74
 Gagnon M., Agente, 75
 Gagnon C., Agent, 99
+Frenette,Agente,77
+Méthot,Agent,61
