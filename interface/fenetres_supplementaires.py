@@ -199,7 +199,8 @@ class GestionEquipes(Tk):
             self.boutons_equipes[equipe] = Radiobutton(self.cadre_boutons,
                                                        text="Equipe "+ equipe,
                                                        variable=self.valeur_equipe, value=equipe, bd=2,
-                                                       indicatoron=0, width=8, font=("Arial", 13, "bold"))
+                                                       indicatoron=0, width=8, font=("Arial", 13, "bold"),
+                                                       command=self.charger_equipe)
 
         self.boutons_equipes["A"].grid(row=0, column=0, padx=5, pady=5)
         self.boutons_equipes["B"].grid(row=0, column=1, padx=5, pady=5)
@@ -210,7 +211,8 @@ class GestionEquipes(Tk):
                                 command=self.sauvegarder_changements)
         bouton_termine.grid(row=2, column=0, columnspan=5, padx=5, pady=5)
 
-    def charger_equipe(self, equipe):
+    def charger_equipe(self):
+        equipe = self.valeur_equipe.get()
         lieutenant, a_205, a_206, a_207 = self.fenetre.liste_equipes[equipe]["lieutenant"], \
                                           self.fenetre.liste_equipes[equipe]["205"], \
                                           self.fenetre.liste_equipes[equipe]["206"], \
@@ -240,10 +242,14 @@ class GestionEquipes(Tk):
         if self.valeur_equipe.get() == "":
             Message("Erreur", "Vous devez sélectionner une équipe!")
         else:
-            lieutenant, a_205, a_206, a_207 = self.cadres_patrouilleurs["lieutenant"].entree_agent.get(self.cadres_patrouilleurs["lieutenant"].entree_agent.curselection()), \
-                                              self.cadres_patrouilleurs["205"].entree_agent.get(self.cadres_patrouilleurs["205"].entree_agent.curselection()), \
-                                              self.cadres_patrouilleurs["206"].entree_agent.get(self.cadres_patrouilleurs["206"].entree_agent.curselection()), \
-                                              self.cadres_patrouilleurs["207"].entree_agent.get(self.cadres_patrouilleurs["207"].entree_agent.curselection())
+            lieutenant, a_205, a_206, a_207 = self.cadres_patrouilleurs["lieutenant"].entree_agent.get(
+                self.cadres_patrouilleurs["lieutenant"].entree_agent.curselection()), \
+                                              self.cadres_patrouilleurs["205"].entree_agent.get(
+                                                  self.cadres_patrouilleurs["205"].entree_agent.curselection()), \
+                                              self.cadres_patrouilleurs["206"].entree_agent.get(
+                                                  self.cadres_patrouilleurs["206"].entree_agent.curselection()), \
+                                              self.cadres_patrouilleurs["207"].entree_agent.get(
+                                                  self.cadres_patrouilleurs["207"].entree_agent.curselection())
             with open("equipes.txt", "r") as f:
                 numero_ligne = 0
                 lignes = f.readlines()
@@ -261,6 +267,8 @@ class GestionEquipes(Tk):
                 for ligne in lignes:
                     f.write(ligne)
                 f.close()
+
+            self.fenetre.charger_equipes()
 
 
 class CadreAgent():
