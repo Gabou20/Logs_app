@@ -1,6 +1,6 @@
 __author__ = 'Gabrielle Martin-Fortier '
 
-from tkinter import Tk, Button, Label, Entry, Frame, Checkbutton, N, END, W, E, scrolledtext, Listbox
+from tkinter import Tk, Button, Label, Entry, Frame, Checkbutton, W, E, scrolledtext, Listbox, END, Radiobutton, StringVar
 from logs.patrouilleur import Patrouilleur
 from logs.log import Log
 from random import choice
@@ -53,14 +53,12 @@ class FinQuart(Tk):
 
 class GestionAgents(Tk):
     """ Crée la fenêtre d'options d'un jeu de dames.
-
         Attribute:
             fenetre (Tk): fenêtre du jeu de dames
         """
 
     def __init__(self, fenetre):
         """ Constructeur de la classe GestionAgents
-
             Args:
                 fenetre (Tk) : fenetre actuelle de quart
         """
@@ -154,6 +152,148 @@ class GestionAgents(Tk):
                                  self.fenetre.liste_agents[agent].convertir_en_chaine(), "\n"]:
                     f.write(ligne)
         f.close()
+
+
+class GestionEquipes(Tk):
+    """ Crée la fenêtre permettant de modifier les agents constituant une équipe
+
+        Attribute:
+
+        """
+
+    def __init__(self, fenetre):
+        """ Constructeur de la classe GestionEquipes
+
+            Args:
+                fenetre (Tk) : fenetre actuelle de quart
+        """
+        super().__init__()
+        self.resizable(0, 0)
+        self.title("Gestion équipes")
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(2, weight=1, minsize=10)
+        self.grid_columnconfigure(4, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(2, weight=1)
+        self.fenetre = fenetre
+        self.valeur_equipe = StringVar(self)
+
+        self.cadres_patrouilleurs = {
+            "lieutenant": CadreAgent(0, "lieutenant", self, self.fenetre.liste_agents),
+            "205": CadreAgent(1, "205", self, self.fenetre.liste_agents),
+            "206": CadreAgent(2, "206", self, self.fenetre.liste_agents),
+            "207": CadreAgent(3, "207", self, self.fenetre.liste_agents)
+        }
+
+        self.boutons_equipes = {
+            "A": None,
+            "B": None,
+            "C": None,
+            "D": None
+        }
+
+        self.cadre_boutons = Frame(self)
+        self.cadre_boutons.grid(row=0, column=0, columnspan=4)
+
+        for equipe in ["A", "B", "C", "D"]:
+            self.boutons_equipes[equipe] = Radiobutton(self.cadre_boutons,
+                                                       text="Equipe "+ equipe,
+                                                       variable=self.valeur_equipe, value=equipe, bd=2,
+                                                       indicatoron=0, width=8, font=("Arial", 13, "bold"))
+
+        self.boutons_equipes["A"].grid(row=0, column=0, padx=5, pady=5)
+        self.boutons_equipes["B"].grid(row=0, column=1, padx=5, pady=5)
+        self.boutons_equipes["C"].grid(row=0, column=2, padx=5, pady=5)
+        self.boutons_equipes["D"].grid(row=0, column=3, padx=5, pady=5)
+
+        bouton_termine = Button(self, text="Sauvegarder les changements", font=("Arial", 13, "bold"),
+                                command=self.sauvegarder_changements)
+        bouton_termine.grid(row=2, column=0, columnspan=5, padx=5, pady=5)
+
+    def charger_equipe(self, equipe):
+        lieutenant, a_205, a_206, a_207 = self.fenetre.liste_equipes[equipe]["lieutenant"], \
+                                          self.fenetre.liste_equipes[equipe]["205"], \
+                                          self.fenetre.liste_equipes[equipe]["206"], \
+                                          self.fenetre.liste_equipes[equipe]["207"]
+
+        index_205 = self.cadres_patrouilleurs["205"].entree_agent.get(0, END).index(a_205.afficher_sans_titre())
+        self.cadres_patrouilleurs["205"].entree_agent.select_clear(0, END)
+        self.cadres_patrouilleurs["205"].entree_agent.select_set(index_205)
+        self.cadres_patrouilleurs["205"].entree_agent.see(index_205)
+
+        index_206 = self.cadres_patrouilleurs["206"].entree_agent.get(0, END).index(a_206.afficher_sans_titre())
+        self.cadres_patrouilleurs["206"].entree_agent.select_clear(0, END)
+        self.cadres_patrouilleurs["206"].entree_agent.select_set(index_206)
+        self.cadres_patrouilleurs["206"].entree_agent.see(index_206)
+
+        index_207 = self.cadres_patrouilleurs["207"].entree_agent.get(0, END).index(a_207.afficher_sans_titre())
+        self.cadres_patrouilleurs["207"].entree_agent.select_clear(0, END)
+        self.cadres_patrouilleurs["207"].entree_agent.select_set(index_207)
+        self.cadres_patrouilleurs["207"].entree_agent.see(index_207)
+
+        index_207 = self.cadres_patrouilleurs["lieutenant"].entree_agent.get(0, END).index(lieutenant.afficher_sans_titre())
+        self.cadres_patrouilleurs["lieutenant"].entree_agent.select_clear(0, END)
+        self.cadres_patrouilleurs["lieutenant"].entree_agent.select_set(index_207)
+        self.cadres_patrouilleurs["lieutenant"].entree_agent.see(index_207)
+
+    def sauvegarder_changements(self):
+        if self.valeur_equipe.get() == "":
+            Message("Erreur", "Vous devez sélectionner une équipe!")
+        else:
+            lieutenant, a_205, a_206, a_207 = self.cadres_patrouilleurs["lieutenant"].entree_agent.get(self.cadres_patrouilleurs["lieutenant"].entree_agent.curselection()), \
+                                              self.cadres_patrouilleurs["205"].entree_agent.get(self.cadres_patrouilleurs["205"].entree_agent.curselection()), \
+                                              self.cadres_patrouilleurs["206"].entree_agent.get(self.cadres_patrouilleurs["206"].entree_agent.curselection()), \
+                                              self.cadres_patrouilleurs["207"].entree_agent.get(self.cadres_patrouilleurs["207"].entree_agent.curselection())
+            with open("equipes.txt", "r") as f:
+                numero_ligne = 0
+                lignes = f.readlines()
+                f.close()
+
+            for ligne in lignes:
+                if ligne == self.valeur_equipe.get()+"\n":
+                    numero_ligne = lignes.index(ligne)
+            lignes[numero_ligne + 1] = self.fenetre.liste_agents[lieutenant].convertir_en_chaine() + "\n"
+            lignes[numero_ligne + 2] = self.fenetre.liste_agents[a_205].convertir_en_chaine() + "\n"
+            lignes[numero_ligne + 3] = self.fenetre.liste_agents[a_206].convertir_en_chaine() + "\n"
+            lignes[numero_ligne + 4] = self.fenetre.liste_agents[a_207].convertir_en_chaine() + "\n"
+
+            with open("equipes.txt", "w") as f:
+                for ligne in lignes:
+                    f.write(ligne)
+                f.close()
+
+
+class CadreAgent():
+    def __init__(self, colonne, poste, cadre_parent, liste_agents):
+        # Création objets
+        self.cadre = Frame(cadre_parent, bd=3, relief='ridge')
+
+        self.cadre_pat = Frame(self.cadre)
+        label_pat = Label(self.cadre_pat, text=poste, font=("Arial", 13, "bold"))
+        self.entree_agent = Listbox(self.cadre, height=5, width=18, exportselection=0, yscrollcommand=1,
+                                    font=("Arial", 13))
+        for item in sorted(liste_agents, reverse=True):
+            self.entree_agent.insert(0, item)
+
+        numero = 0
+        while numero < 5:
+            self.cadre.columnconfigure(numero, weight=1)
+            self.cadre.rowconfigure(numero, weight=1)
+            numero += 2
+        self.cadre.rowconfigure(6, weight=1)
+
+        self.cadre_pat.columnconfigure(0, weight=1)
+        self.cadre_pat.columnconfigure(2, weight=1)
+        self.cadre_pat.columnconfigure(4, weight=1)
+        self.cadre_pat.rowconfigure(0, weight=1)
+        self.cadre_pat.rowconfigure(2, weight=1)
+
+        self.cadre.grid(row=1, column=colonne, sticky=W, padx=5, pady=5)
+        self.cadre_pat.grid(columnspan=5, row=0, column=1)
+
+        label_pat.grid(row=1, column=1, sticky=W)
+        self.entree_agent.grid(row=5, column=3, padx=5, pady=5, sticky=W)
+
 
 class Options(Tk):
     """ Crée la fenêtre d'options d'un jeu de dames.
@@ -292,42 +432,8 @@ class TousLesLogs(Tk):
         self.resizable(0, 0)
         self.config(height=10)
         scroll = scrolledtext.ScrolledText(self, height=20, width=65, wrap='word')
-        self.title("Déplacements effectués")
-        for i in range(0, len(fenetre.partie.damier.liste_mouvements)):
-            mouvement = fenetre.partie.damier.liste_mouvements[i]
-            if mouvement.type_piece == "dame":
-                type_piece = "Dame"
-                if mouvement.couleur_piece == "noir":
-                    couleur = "noire"
-                else:
-                    couleur = "blanche"
-            else:
-                type_piece = "Pion"
-                if mouvement.couleur_piece == "noir":
-                    couleur = "noir"
-                else:
-                    couleur = "blanc"
-            if mouvement.position_prise is None:
-                message_prise = "Aucune prise."
-            else:
-                prise = mouvement.position_prise
-                if mouvement.type_piece_prise == "dame":
-                    type_prise = "Dame"
-                    feminin = "e"
-                    if mouvement.couleur_prise == "noir":
-                        couleur_prise = "noire"
-                    else:
-                        couleur_prise = "blanche"
-                else:
-                    type_prise = "Pion"
-                    feminin = ""
-                    couleur_prise = mouvement.couleur_prise
-                message_prise = "{} {} pris{} en {}.".format(type_prise, couleur_prise, feminin, prise)
-            deplacement = "- {} {} de {} à {}. {}\n".format(type_piece, couleur,
-                                                            mouvement.position_source, mouvement.position_cible,
-                                                            message_prise)
-            scroll.insert('end', deplacement)
-        scroll.grid()
+        self.title("Registre des logs du quart")
+
 
 class Message(Tk):
     """Ouvre une nouvelle fenêtre qui affiche une liste des déplacement effectués jusqu'à maintenant dans la partie.
@@ -341,9 +447,7 @@ class Message(Tk):
         """
         super().__init__()
         self.resizable(0, 0)
-        #self.config(height=100, width=300)
         self.title(titre)
-        #self.grid_propagate(0)
         self.rowconfigure(0, weight=1)
         self.rowconfigure(2, weight=1)
         self.rowconfigure(4, weight=1)

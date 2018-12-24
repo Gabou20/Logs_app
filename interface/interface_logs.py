@@ -1,16 +1,18 @@
 __author__ = 'Gabrielle Martin-Fortier'
 
-from tkinter import Tk, Label, Entry, Checkbutton, Button, W, Listbox, Frame, NSEW, Menu, filedialog, Radiobutton, StringVar, END, CENTER, LEFT
+from tkinter import Tk, Label, Entry, Checkbutton, Button, W, Listbox, Frame, NSEW, Menu, filedialog, Radiobutton, \
+    StringVar, END, CENTER, IntVar
 from logs.log import Log
 from logs.agent import Agent
 from logs.exceptions import ErreurDeplacement, ErreurPositionCible, ErreurPositionSource, PieceInexistante
 from logs.patrouilleur import Patrouilleur
 from logs.quart import Quart
-from interface.fenetres_supplementaires import FinQuart, Options, TousLesLogs, Message, GestionAgents
+from interface.fenetres_supplementaires import FinQuart, Options, TousLesLogs, Message, GestionAgents, GestionEquipes
 import datetime
 
-class Cadre_nouveau_patrouilleur(Frame):
-    def __init__(self, colonne, cadre_parent, patrouilleur, commande, agents):
+
+class CadreNouveauPatrouilleur(Frame):
+    def __init__(self, colonne, cadre_parent, patrouilleur, commande, agents, couleur_defaut):
         #Création objets
         self.cadre = Frame(cadre_parent, bd=3, relief='ridge')
 
@@ -23,7 +25,8 @@ class Cadre_nouveau_patrouilleur(Frame):
             "rose": ["maroon1", "maroon3"],
             "gris": ["light grey", "gray60"],
             "orange": ["DarkOrange2", "DarkOrange3"],
-            "blanc": ["snow", "snow3"]
+            "blanc": ["snow", "snow3"],
+            "noir": ["gray37", "gray33"]
         }
 
         self.boutons_couleurs = {
@@ -35,18 +38,20 @@ class Cadre_nouveau_patrouilleur(Frame):
             "rose": None,
             "gris": None,
             "orange": None,
-            "blanc": None
+            "blanc": None,
+            "noir": None
         }
 
         self.cadre_pat = Frame(self.cadre)
         label_pat = Label(self.cadre_pat, text="Patrouilleur "+patrouilleur, font=("Arial", 13, "bold"))
-        self.bouton = Checkbutton(self.cadre_pat, command=commande)
+        self.actif = IntVar()
+        self.bouton = Checkbutton(self.cadre_pat, command=commande, variable=self.actif)
         self.entree_agent = Listbox(self.cadre, height=5, width=18, exportselection=0, yscrollcommand=1, font=("Arial", 13))
         for item in sorted(agents, reverse=True):
             self.entree_agent.insert(0, item)
         self.cadre_couleurs = Frame(self.cadre)
         self.valeur_couleur = StringVar()
-        self.valeur_couleur.set("rouge")
+        self.valeur_couleur.set(couleur_defaut)
         for couleur in self.couleurs_possibles:
             self.boutons_couleurs[couleur] = Radiobutton(self.cadre_couleurs, bg=self.couleurs_possibles[couleur][0],
                                                          selectcolor=self.couleurs_possibles[couleur][0],
@@ -114,17 +119,17 @@ class Nouveau_quart(Tk):
         self.charger_equipes()
 
         self.cadres_patrouilleurs = {
-            "204": Cadre_nouveau_patrouilleur(0, self.cadre_nouveau_quart, "204", activer_204, self.liste_agents),
-            "205": Cadre_nouveau_patrouilleur(1, self.cadre_nouveau_quart, "205", activer_205, self.liste_agents),
-            "206": Cadre_nouveau_patrouilleur(2, self.cadre_nouveau_quart, "206", activer_206, self.liste_agents),
-            "207": Cadre_nouveau_patrouilleur(3, self.cadre_nouveau_quart, "207", activer_207, self.liste_agents)
+            "204": CadreNouveauPatrouilleur(0, self.cadre_nouveau_quart, "204", activer_204, self.liste_agents, "jaune"),
+            "205": CadreNouveauPatrouilleur(1, self.cadre_nouveau_quart, "205", activer_205, self.liste_agents, "bleu"),
+            "206": CadreNouveauPatrouilleur(2, self.cadre_nouveau_quart, "206", activer_206, self.liste_agents, "vert"),
+            "207": CadreNouveauPatrouilleur(3, self.cadre_nouveau_quart, "207", activer_207, self.liste_agents, "rouge")
         }
 
         self.patrouilleurs_actifs = {
-            "204": False,
-            "205": False,
-            "206": False,
-            "207": False
+            "204": 0,
+            "205": 0,
+            "206": 0,
+            "207": 0
         }
 
         self.couleurs_possibles = {
@@ -136,7 +141,8 @@ class Nouveau_quart(Tk):
             "rose": ["maroon1", "maroon3"],
             "gris": ["light grey", "gray60"],
             "orange": ["DarkOrange2", "DarkOrange3"],
-            "blanc": ["snow", "snow3"]
+            "blanc": ["snow", "snow3"],
+            "noir": ["gray37", "gray33"]
         }
 
         self.boutons_couleurs = {
@@ -155,23 +161,38 @@ class Nouveau_quart(Tk):
 
         #Cadre options
         cadre_options = Frame(self.cadre_nouveau_quart, bd=3, relief="ridge")
-        cadre_options.grid(row=0, column=0)
+        cadre_options.grid(row=0, column=0, columnspan=2)
+
+        self.cadre_equipes = Frame(self.cadre_nouveau_quart, bd=3, relief="ridge")
+        self.cadre_equipes.grid(row=0, column=2, columnspan=2)
 
         equipeA = lambda: self.charger_equipe("A")
+        equipeB = lambda: self.charger_equipe("B")
+        equipeC = lambda: self.charger_equipe("C")
+        equipeD = lambda: self.charger_equipe("D")
 
         bouton_gestion_agents = Button(cadre_options, text="Gestion des agents",
                                        font=("Arial", 13, "bold"),
-                                       command=self.charger_quart)
+                                       command=self.gestion_agents)
+        bouton_gestion_equipes = Button(cadre_options, text="Gestion des équipes",
+                                        font=("Arial", 13, "bold"),
+                                        command=self.gestion_equipes)
         bouton_charger_quart = Button(cadre_options, text="Charger un quart",
                                       font=("Arial", 13, "bold"),
                                       command=self.charger_quart)
-        bouton_equipe_a = Button(cadre_options, text="Équipe A",
-                                      font=("Arial", 13, "bold"),
-                                      command=equipeA)
+        bouton_equipe_a = self.creer_bouton_equipe("Equipe A", equipeA)
+        bouton_equipe_b = self.creer_bouton_equipe("Equipe B", equipeB)
+        bouton_equipe_c = self.creer_bouton_equipe("Equipe C", equipeC)
+        bouton_equipe_d = self.creer_bouton_equipe("Equipe D", equipeD)
 
-        bouton_gestion_agents.grid(row=0, column=0)
-        bouton_charger_quart.grid(row=1, column=0)
-        bouton_equipe_a.grid(row=3, column=0)
+        bouton_gestion_agents.grid(row=0, column=0, padx=5, pady=5)
+        bouton_gestion_equipes.grid(row=1, column=0, padx=5, pady=5)
+        bouton_charger_quart.grid(row=2, column=0, padx=5, pady=5)
+
+        bouton_equipe_a.grid(row=0, column=0, padx=5, pady=5)
+        bouton_equipe_b.grid(row=0, column=1, padx=5, pady=5)
+        bouton_equipe_c.grid(row=1, column=0, padx=5, pady=5)
+        bouton_equipe_d.grid(row=1, column=1, padx=5, pady=5)
 
         # Lieutenant
         cadre_lieutenant = Frame(self.cadre_nouveau_quart, bd=3, relief="ridge")
@@ -209,6 +230,11 @@ class Nouveau_quart(Tk):
                            font=("Arial", 13, "bold"))
         bouton_ok.grid(padx=5, pady=5, sticky=W)
 
+    def creer_bouton_equipe(self, caption, commande):
+        return Button(self.cadre_equipes, text=caption,
+                      font=("Arial", 13, "bold"),
+                      command=commande)
+
     def charger_equipes(self):
         with open("equipes.txt", 'r') as fichier:
             chaine = fichier.read()
@@ -229,29 +255,36 @@ class Nouveau_quart(Tk):
     def gestion_agents(self):
         GestionAgents(self)
 
+    def gestion_equipes(self):
+        GestionEquipes(self)
+
     def charger_equipe(self, equipe):
         lieutenant, a_205, a_206, a_207 = self.liste_equipes[equipe]["lieutenant"], self.liste_equipes[equipe]["205"], \
                                           self.liste_equipes[equipe]["206"], self.liste_equipes[equipe]["207"]
 
         index_205 = self.cadres_patrouilleurs["205"].entree_agent.get(0, END).index(a_205.afficher_sans_titre())
+        self.cadres_patrouilleurs["205"].entree_agent.select_clear(0, END)
         self.cadres_patrouilleurs["205"].entree_agent.select_set(index_205)
         self.cadres_patrouilleurs["205"].entree_agent.see(index_205)
         self.cadres_patrouilleurs["205"].bouton.select()
         self.options_dans_attributs("205")
 
         index_206 = self.cadres_patrouilleurs["206"].entree_agent.get(0, END).index(a_206.afficher_sans_titre())
+        self.cadres_patrouilleurs["206"].entree_agent.select_clear(0, END)
         self.cadres_patrouilleurs["206"].entree_agent.select_set(index_206)
         self.cadres_patrouilleurs["206"].entree_agent.see(index_206)
         self.cadres_patrouilleurs["206"].bouton.select()
         self.options_dans_attributs("206")
 
         index_207 = self.cadres_patrouilleurs["207"].entree_agent.get(0, END).index(a_207.afficher_sans_titre())
+        self.cadres_patrouilleurs["207"].entree_agent.select_clear(0, END)
         self.cadres_patrouilleurs["207"].entree_agent.select_set(index_207)
         self.cadres_patrouilleurs["207"].entree_agent.see(index_207)
         self.cadres_patrouilleurs["207"].bouton.select()
         self.options_dans_attributs("207")
 
         index_lieutenant = self.entree_lieutenant.get(0, END).index(lieutenant.afficher_sans_titre())
+        self.entree_lieutenant.select_clear(0, END)
         self.entree_lieutenant.select_set(index_lieutenant)
         self.entree_lieutenant.see(index_lieutenant)
 
@@ -279,8 +312,7 @@ class Nouveau_quart(Tk):
                         self.cadres_patrouilleurs[pat].valeur_couleur.get()])
                     nb_pat += 1
                 except:
-                    print(pat)
-                    if not erreur:
+                   if not erreur:
                         self.afficher_message("Patrouilleurs anonymes",
                                               "L'un des patrouilleurs est activé mais n'a pas d'identité")
                         erreur = True
@@ -294,10 +326,7 @@ class Nouveau_quart(Tk):
             self.destroy()
 
     def options_dans_attributs(self, patrouilleur):
-        if self.patrouilleurs_actifs[patrouilleur]:
-            self.patrouilleurs_actifs[patrouilleur] = False
-        else:
-            self.patrouilleurs_actifs[patrouilleur] = True
+        self.patrouilleurs_actifs[patrouilleur] = self.cadres_patrouilleurs[patrouilleur].actif
 
     def charger_agents(self):
         fichier = open("agents.txt", 'r')
