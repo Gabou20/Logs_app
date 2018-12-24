@@ -7,7 +7,7 @@ from logs.agent import Agent
 from logs.exceptions import ErreurDeplacement, ErreurPositionCible, ErreurPositionSource, PieceInexistante
 from logs.patrouilleur import Patrouilleur
 from logs.quart import Quart
-from interface.fenetres_supplementaires import FinQuart, Options, TousLesLogs, Message, GestionAgents, GestionEquipes
+from interface.fenetres_supplementaires import FinQuart, Options, TousLesLogs, Message, GestionAgents, GestionEquipes, About
 import datetime
 
 
@@ -689,30 +689,39 @@ class Fenetre(Tk):
         # On crée le menu
         menu_logs = Menu(self)
         menu_principal = Menu(menu_logs, tearoff=0)
+        menu_donnees = Menu(menu_logs, tearoff=0)
+        menu_aide = Menu(menu_logs, tearoff=0)
+
         sauvegarder_quart = lambda: self.sauvegarder_quart(True)
         logs_effectues = lambda: self.nouveau_quart_quitter()
         options = lambda: self.nouveau_quart_quitter()
 
-        menu_principal.add_command(label="Nouveau quart", command=self.nouveau_quart_quitter)
+        #Premier onglet
+        menu_logs.add_cascade(label="Quart", menu=menu_principal)
+        menu_principal.add_command(label="Nouveau quart", command=self.nouveau_quart)
         menu_principal.add_command(label="Sauvegarder le quart", command=sauvegarder_quart)
         menu_principal.add_command(label="Charger un quart", command=self.charger_quart)
         menu_principal.add_command(label="Annuler le dernier log", command=self.annuler_dernier_log)
         menu_principal.add_command(label="Voir tous les logs", command=logs_effectues)
         menu_principal.add_command(label="Options", command=options)
         menu_principal.add_command(label="Quitter", command=self.quit)
-        menu_logs.add_cascade(label="Quart", menu=menu_principal)
-        self.config(menu=menu_logs)
 
         #Deuxième onglet
-        menu_donnees = Menu(menu_logs, tearoff=0)
-
         #menu_donnees.add_command(label="Gestion des agents", command=self.gerer_agents)
         #menu_donnees.add_command(label="Gestion des logs", command=self.gerer_logs)
         menu_logs.add_cascade(label="Gestion des données", menu=menu_donnees)
+
+        #Troisieme onglet
+        menu_logs.add_cascade(label="Aide", menu=menu_aide)
+        menu_aide.add_command(label="Fonctionnement", command=self.aide)
+
+
         self.config(menu=menu_logs)
 
     #def gerer_logs(self):
 
+    def aide(self):
+        About()
 
     def dessiner_cadres(self, cadre_quart):
         """Initialise un quart avec les cadres pour chaque patrouilleur. Dépend du nombre de patrouilleurs.
@@ -895,3 +904,7 @@ class Fenetre(Tk):
             couleur: la couleur du texte du message
         """
         Message(titre, message)
+
+    def nouveau_quart(self):
+        Nouveau_quart()
+        self.destroy()

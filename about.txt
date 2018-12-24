@@ -1,0 +1,28 @@
+Ce programme simple permet de suivre les activités des patrouilleurs à l'aéroport de Québec.
+
+Lors de la création d'un nouveau quart, vous pouvez choisir d'avoir entre un et quatre patrouilleurs en cochant les cases à 
+côté de chaque poste.
+Vous devez alors choisir un agent dans la liste pour chaque patrouilleur activé, ainsi que pour le lieutenant en devoir.
+Vous pouvez sauver du temps en cliquant sur une équipe en-haut à droite. Vous pourrez ensuite appliquer des changements 
+s'il y en a.
+Vous pouvez choisir la couleur du cadre de chaque patrouilleur sur l'interface en cliquant sur la couleur de votre choix. 
+Des couleurs sont attitrées par défaut, alors ce n'est pas obligatoire.
+Lorsque vous avez choisi tous vos patrouilleurs et leurs attributs, cliquez sur le bouton "Nouveau quart" dans le bas de 
+la fenêtre pour ouvrir la page principale du quart.
+
+Les logs s'ajoutent avec les boutons à droite. Plusieurs patrouilleurs peuvent être sélectionnés à la fois, et les options 
+s'offrent ensuite à vous à mesure que vous faites des choix en enfonçant les boutons. 
+Il est possible d'ajouter une note à chaque log, mais ce n'est pas obligatoire. Attention, le log s'effectue lorsque le 
+bouton du log est enfoncé, alors vous devez écrire la note avant d'appuyer.
+Les logs ne sont pas modifiables une fois exécutés, mais les heures sont toutes modifiables. Les changements s'enregistrent 
+lors du prochain log (pour n'importe quel patrouilleur), ou si vous enregistrez le quart manuellement.
+Vous pouvez aussi annuler le dernier log effectué (une fois seulement). 
+
+Le quart s'enregistre automatiquement dans un fichier portant la date et l'heure de la création du quart comme nom. Chaque 
+fois qu'un log est effectué, l'enregistrement est mis à jour. Il est ensuite possible de charger un quart existant
+à partir de la fenêtre de création d'un quart, ou de la fenêtre principale.
+
+Il est possible d'ajouter et de supprimer des agents de la liste à partir de la page de création de quart (Gestion des agents). 
+Un nouvel agent n'est pas placé tout de suite dans l'ordre alphabétique, mais à la fin des liste. Il sera placé au bon
+endroit lors de l'ouverture suivante du programme.
+Il est également possible de modifier les équipes (Gestion des équipes) à cet endroit.

@@ -269,6 +269,7 @@ class GestionEquipes(Tk):
                 f.close()
 
             self.fenetre.charger_equipes()
+            self.destroy()
 
 
 class CadreAgent():
@@ -468,3 +469,34 @@ class Message(Tk):
         ok = lambda: self.destroy()
         self.ok = Button(self, text="ok", command=ok, font=("Arial", 15), width=8, bd=2)
         self.ok.grid(row=3, column=1, padx=10, pady=1)
+
+
+class About(Tk):
+    """Ouvre une nouvelle fenêtre qui affiche le fonctionnement général du programme.
+    """
+
+    def __init__(self):
+        """ Constructeur de la classe Deplacements_effectues. Initialise son argument.
+
+        Arg:
+            fenetre (Tk): fenêtre du jeu de dames
+        """
+        super().__init__()
+        self.resizable(0, 0)
+        self.title("Aide")
+        self.rowconfigure(0, weight=1)
+        self.rowconfigure(2, weight=1)
+        self.rowconfigure(4, weight=1)
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(2, weight=1)
+
+        with open("about.txt", 'r') as f:
+            texte = f.read()
+            f.close()
+
+        self.message = Label(self, text=texte, font=("Arial", 12))
+        self.message.grid(row=0, column=0, padx=10, pady=10)
+
+        ok = lambda: self.destroy()
+        self.ok = Button(self, text="Fermer", command=ok, font=("Arial", 15), width=8, bd=2)
+        self.ok.grid(row=1, column=0, padx=10, pady=1)
