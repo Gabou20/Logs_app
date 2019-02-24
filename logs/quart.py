@@ -20,7 +20,7 @@ class Quart:
         dernier_pat_log (Patrouilleur) : Le dernier patrouilleur à avoir eu un log
     """
 
-    def __init__(self, id_lieutenant=Agent("", "", ""), couleur_lieutenant="chartreuse", nb_patrouilleurs=1, id_204=None, id_205=None, id_206=None, id_207=None):
+    def __init__(self, jour_nuit=None, id_lieutenant=Agent("", "", ""), couleur_lieutenant="chartreuse", nb_patrouilleurs=1, id_204=None, id_205=None, id_206=None, id_207=None):
         """Constructeur du Damier. Initialise un damier initial de 8 lignes par 8 colonnes.
 
         Args:
@@ -45,6 +45,7 @@ class Quart:
         self.couleur_lieutenant = couleur_lieutenant
         self.dernier_pat_log = []
         self.nom_quart = datetime.datetime.now().strftime("%B-%d-%Y %Hh%M")
+        self.jour_nuit = jour_nuit
 
     def effacer_dernier_log(self):
         """Vérifie si les coordonnées d'une position sont dans les bornes du damier (entre 0 inclusivement et le nombre

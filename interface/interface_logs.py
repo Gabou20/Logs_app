@@ -104,6 +104,7 @@ class Nouveau_quart(Tk):
         self.cadre_nouveau_quart = Frame(self)
         self.liste_agents = {}
         self.charger_agents()
+        self.jour_nuit = None
 
         activer_204 = lambda: self.options_dans_attributs("204")
         activer_205 = lambda: self.options_dans_attributs("205")
@@ -159,12 +160,23 @@ class Nouveau_quart(Tk):
 
         self.cadre_nouveau_quart.grid(row=0, padx=5, pady=5)
 
+        #On coche les patrouilleurs par défaut
+        self.cadres_patrouilleurs["205"].bouton.select()
+        self.cadres_patrouilleurs["206"].bouton.select()
+        self.cadres_patrouilleurs["207"].bouton.select()
+        self.options_dans_attributs("205")
+        self.options_dans_attributs("206")
+        self.options_dans_attributs("207")
+
         #Cadre options
         cadre_options = Frame(self.cadre_nouveau_quart, bd=3, relief="ridge")
         cadre_options.grid(row=0, column=0, columnspan=2)
 
         self.cadre_equipes = Frame(self.cadre_nouveau_quart, bd=3, relief="ridge")
         self.cadre_equipes.grid(row=0, column=2, columnspan=2)
+
+        self.cadre_jour_nuit = Frame(self.cadre_equipes, bd=3, relief="ridge")
+        self.cadre_jour_nuit.grid(row=2, column=0, columnspan=2)
 
         equipeA = lambda: self.charger_equipe("A")
         equipeB = lambda: self.charger_equipe("B")
@@ -193,6 +205,16 @@ class Nouveau_quart(Tk):
         bouton_equipe_b.grid(row=0, column=1, padx=5, pady=5)
         bouton_equipe_c.grid(row=1, column=0, padx=5, pady=5)
         bouton_equipe_d.grid(row=1, column=1, padx=5, pady=5)
+
+        bouton_jour = Radiobutton(self.cadre_jour_nuit, selectcolor="Yellow", width=4,
+                                                         variable=self.jour_nuit, value="Jour",
+                                                         indicatoron=0, text="Jour", font=("Arial", 13, "bold"))
+        bouton_nuit = Radiobutton(self.cadre_jour_nuit, selectcolor="Blue",width=4,
+                                                         variable=self.jour_nuit, value="Nuit",
+                                                         indicatoron=0, text="Nuit", font=("Arial", 13, "bold"))
+
+        bouton_jour.grid(row=0, column=0, padx=5, pady=5)
+        bouton_nuit.grid(row=0, column=1, padx=5, pady=5)
 
         # Lieutenant
         cadre_lieutenant = Frame(self.cadre_nouveau_quart, bd=3, relief="ridge")
@@ -230,6 +252,9 @@ class Nouveau_quart(Tk):
                            font=("Arial", 13, "bold"))
         bouton_ok.grid(padx=5, pady=5, sticky=W)
 
+    def assigner_jour(self, jour):
+        self.jour_nuit = jour
+
     def creer_bouton_equipe(self, caption, commande):
         return Button(self.cadre_equipes, text=caption,
                       font=("Arial", 13, "bold"),
@@ -238,7 +263,7 @@ class Nouveau_quart(Tk):
     def charger_equipes(self):
         with open("equipes.txt", 'r') as fichier:
             chaine = fichier.read()
-            postes = ["lieutenant", "205", "206", "207"]
+            postes = ["lieutenant", "205"]
             if chaine != "":
                 equipe_courante = ""
                 for ligne in chaine.split("\n"):
@@ -259,8 +284,7 @@ class Nouveau_quart(Tk):
         GestionEquipes(self)
 
     def charger_equipe(self, equipe):
-        lieutenant, a_205, a_206, a_207 = self.liste_equipes[equipe]["lieutenant"], self.liste_equipes[equipe]["205"], \
-                                          self.liste_equipes[equipe]["206"], self.liste_equipes[equipe]["207"]
+        lieutenant, a_205 = self.liste_equipes[equipe]["lieutenant"], self.liste_equipes[equipe]["205"]
 
         index_205 = self.cadres_patrouilleurs["205"].entree_agent.get(0, END).index(a_205.afficher_sans_titre())
         self.cadres_patrouilleurs["205"].entree_agent.select_clear(0, END)
@@ -268,20 +292,6 @@ class Nouveau_quart(Tk):
         self.cadres_patrouilleurs["205"].entree_agent.see(index_205)
         self.cadres_patrouilleurs["205"].bouton.select()
         self.options_dans_attributs("205")
-
-        index_206 = self.cadres_patrouilleurs["206"].entree_agent.get(0, END).index(a_206.afficher_sans_titre())
-        self.cadres_patrouilleurs["206"].entree_agent.select_clear(0, END)
-        self.cadres_patrouilleurs["206"].entree_agent.select_set(index_206)
-        self.cadres_patrouilleurs["206"].entree_agent.see(index_206)
-        self.cadres_patrouilleurs["206"].bouton.select()
-        self.options_dans_attributs("206")
-
-        index_207 = self.cadres_patrouilleurs["207"].entree_agent.get(0, END).index(a_207.afficher_sans_titre())
-        self.cadres_patrouilleurs["207"].entree_agent.select_clear(0, END)
-        self.cadres_patrouilleurs["207"].entree_agent.select_set(index_207)
-        self.cadres_patrouilleurs["207"].entree_agent.see(index_207)
-        self.cadres_patrouilleurs["207"].bouton.select()
-        self.options_dans_attributs("207")
 
         index_lieutenant = self.entree_lieutenant.get(0, END).index(lieutenant.afficher_sans_titre())
         self.entree_lieutenant.select_clear(0, END)
@@ -320,10 +330,12 @@ class Nouveau_quart(Tk):
         if nb_pat == 0 and not erreur:
             self.afficher_message("Aucun patrouilleur", "L'aéroport n'est pas très sécuritaire sans aucun patrouilleur!")
         elif nb_pat != 0:
-            quart = Quart(lieutenant, self.couleurs_possibles[self.valeur_couleur.get()][0],
+            quart = Quart(self.jour_nuit, lieutenant, self.couleurs_possibles[self.valeur_couleur.get()][0],
                         nb_pat, patrouilleurs["204"], patrouilleurs["205"], patrouilleurs["206"], patrouilleurs["207"])
             Fenetre(quart, "Moyen")
             self.destroy()
+        elif self.jour_nuit is None:
+            self.afficher_message("Nuit et jour", "Sommes nous le jour ou la nuit?")
 
     def options_dans_attributs(self, patrouilleur):
         self.patrouilleurs_actifs[patrouilleur] = self.cadres_patrouilleurs[patrouilleur].actif
@@ -464,14 +476,10 @@ class CadreLogs:
             "note": {}
         }
 
-        self.logs_par_section = {
-            "logs_terminal": ["Patrouille", "Intervention", "Ronde niveau 0",
-                         "Ronde niveaux 1-2", "Ronde stat. étagé",
-                         "Vol non fouillé", "Vol international"],
-            "logs_exterieur_ville": ["Patrouille", "Intervention", "Ronde stationnements", "Ronde barrières",
-                                "Opération CSR", "Interception", "Constat d'infraction"],
-            "logs_exterieur_piste": ["Patrouille", "Intervention", "Opération DCZR/DAZR", "Ronde périmètre", "Infraction"]
-        }
+        self.logs_par_section = {"logs_terminal": [],
+                                 "logs_exterieur_ville": [],
+                                 "logs_exterieur_piste": []}
+        self.charger_logs()
 
         #Création boutons patrouilleurs
         for patrouilleur in self.fenetre.quart.id_patrouilleurs:
@@ -645,20 +653,16 @@ class CadreLogs:
         return Button(self.cadres_par_section[section], text=caption, font=("Arial", self.police, "bold"),
                       width=largeur, bd=3, relief="raised", bg="gray70", command=appuyer)
 
-    #def redimensionner(self, event):
-        # Nous recevons dans le "event" la nouvelle dimension dans les attributs width et height. On veut un damier
-        # carré, alors on ne conserve que la plus petite de ces deux valeurs.
-
-        # Calcul de la nouvelle dimension des cases.
-        #self.n_pixels_par_case = min(event.height // self.nb_lignes)
-
-        # On supprime les anciennes cases et on ajoute les nouvelles.
-        #self.delete('case')
-        #self.dessiner_cases()
-
-        # On supprime les anciennes pièces et on ajoute les nouvelles.
-        #self.delete('piece')
-        #self.dessiner_pieces()
+    def charger_logs(self):
+        fichier = open("logs.txt", 'r')
+        chaine = fichier.read()
+        if chaine != "":
+            for section in chaine.split("\n"):
+                if section !="":
+                    nom, liste = section.split(";")
+                    for element in liste.split(","):
+                        self.logs_par_section[nom].append(element)
+        fichier.close()
 
 
 class Fenetre(Tk):
@@ -777,7 +781,6 @@ class Fenetre(Tk):
         #Et pour les boutons
         self.cadre_logs = CadreLogs(self, self.cadre_quart, self.quart.nb_patrouilleurs)
 
-
     def dessiner_cadres(self, cadre_quart):
         """Initialise un quart avec les cadres pour chaque patrouilleur. Dépend du nombre de patrouilleurs.
         """
@@ -785,9 +788,9 @@ class Fenetre(Tk):
 
         cadre_lieutenant = Frame(cadre_quart, bd=3, relief='ridge', bg=self.quart.couleur_lieutenant)
         label_lieutenant = Label(cadre_lieutenant, text=self.quart.id_lieutenant.titre, bg=self.quart.couleur_lieutenant,
-                                 font=("Arial", police, "bold"))
+                                 font=("Arial", police+1, "bold"))
         label_agent = Label(cadre_lieutenant, text=self.quart.id_lieutenant.afficher_sans_titre(),
-                                bg=self.quart.couleur_lieutenant, font=("Arial", police, "bold"))
+                                bg=self.quart.couleur_lieutenant, font=("Arial", police+1, "bold"))
         if self.quart.nb_patrouilleurs !=0:
             cadre_lieutenant.grid(columnspan=self.quart.nb_patrouilleurs, row=0, column=0, padx=10, pady=10)
         label_lieutenant.grid(row=0, column=1)
@@ -815,7 +818,6 @@ class Fenetre(Tk):
                 for log in logs:
                     f.creer_log_existant(pat, log)
         self.destroy()
-
 
     def tous_les_logs(self):
         """Crée une instance de la classeTous_les_logs.
