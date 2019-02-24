@@ -305,110 +305,50 @@ class CadreAgent():
 
 
 class Options(Tk):
-    """ Crée la fenêtre d'options d'un jeu de dames.
+    """ Crée la fenêtre d'options du logiciel de logs
 
     Attribute:
-        fenetre (Tk): fenêtre du jeu de dames
+        fenetre (Tk): fenêtre des logs
     """
 
-    def __init__(self, fenetre, jouer_contre_ordinateur_avant, afficher_sources_avant, afficher_cibles_avant):
+    def __init__(self, fenetre):
         """ Constructeur de la classe Options. Initialise son attribut.
-
-            Args:
-                fenetre (Tk) : fenetre de laquelle on veut gérer les options
-                jouer_contre_ordinateur_avant (bool): Information sur l'attribut fenetre.jouer_contre_ordinateur avant
-                                                      l'ouverture de la fenêtre. Permet de cocher ou décocher
-                                                      le bouton selon l'état actuel de l'attribut.
-                afficher_sources_avant (bool): Information sur l'attribut fenetre.afficher_sources avant
-                                                l'ouverture de la fenêtre. Permet de cocher ou décocher
-                                                le bouton selon l'état actuel de l'attribut.
-                afficher_cibles_avant (bool): Information sur l'attribut self.afficher_cibles avant
-                                                l'ouverture de la fenêtre. Permet de cocher ou décocher
-                                                le bouton selon l'état actuel de l'attribut.
         """
         super().__init__()
         self.resizable(0, 0)
         self.title("Options")
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(0, weight=1)
-        self.fenetre = fenetre
-        cadre_options = Frame(self)
-        cadre_noms = Frame(self)
-        cadre_dimensions = Frame(self)
-        cadre_boutons = Frame(self)
-        options_attributs_ordinateur = lambda: self.options_dans_attributs("ordinateur")
-        options_attributs_sources = lambda: self.options_dans_attributs("sources")
-        options_attributs_cibles = lambda: self.options_dans_attributs("cibles")
-        bouton_jouer_contre_ordinateur = Checkbutton(cadre_options, text="Jouer contre l'ordinateur",
-                                                     command=options_attributs_ordinateur)
-        bouton_afficher_possibilites_sources = Checkbutton(cadre_options,
-                                                           text="Afficher les pièces qui peuvent bouger",
-                                                           command=options_attributs_sources)
-        bouton_afficher_possibilite_cibles = Checkbutton(cadre_options,
-                                                         text="Afficher les cases possibles pour la pièce sélectionnée",
-                                                         command=options_attributs_cibles)
-        label_delai = Label(cadre_options, text="Délai des mouvements automatiques (secondes): ")
-        entree_delai_mouvement_automatique = Entry(cadre_options, width=5)
-        entree_delai_mouvement_automatique.insert(0, fenetre.delai / 1000)
-        label_nom_blanc = Label(cadre_noms, text="Nom du joueur blanc : ")
-        label_nom_noir = Label(cadre_noms, text="Nom du joueur noir : ")
-        entree_nom_blanc = Entry(cadre_noms, width=20)
-        entree_nom_blanc.insert(0, self.fenetre.nom_joueur_blanc)
-        entree_nom_noir = Entry(cadre_noms, width=20)
-        entree_nom_noir.insert(0, self.fenetre.nom_joueur_noir)
-        label_dimensions = Label(cadre_dimensions, text="Dimensions du damier :", padx=5, pady=5)
-        label_lignes = Label(cadre_dimensions, text="   Nombre de lignes : ")
-        label_colonnes = Label(cadre_dimensions, text="   Nombre de colonnes : ")
-        label_rangees = Label(cadre_dimensions, text="   Nombre de rangées avec des pièces : ")
-        entree_nombre_ligne = Entry(cadre_dimensions, width=5)
-        entree_nombre_ligne.insert(0, fenetre.partie.damier.n_lignes)
-        entree_nombre_colonne = Entry(cadre_dimensions, width=5)
-        entree_nombre_colonne.insert(0, fenetre.partie.damier.n_colonnes)
-        entree_nombre_rangees = Entry(cadre_dimensions, width=5)
-        entree_nombre_rangees.insert(0, fenetre.partie.damier.n_rangees)
-        if fenetre.jouer_contre_ordinateur:
-            bouton_jouer_contre_ordinateur.select()
-        else:
-            bouton_jouer_contre_ordinateur.deselect()
-        if fenetre.afficher_sources:
-            bouton_afficher_possibilites_sources.select()
-        else:
-            bouton_afficher_possibilites_sources.deselect()
-        if fenetre.afficher_cibles:
-            bouton_afficher_possibilite_cibles.select()
-        else:
-            bouton_afficher_possibilite_cibles.deselect()
-        cadre_options.grid(row=0)
-        bouton_jouer_contre_ordinateur.grid(sticky=W, padx=5, pady=5)
-        bouton_afficher_possibilites_sources.grid(sticky=W, padx=5, pady=5)
-        bouton_afficher_possibilite_cibles.grid(sticky=W, padx=5, pady=5)
-        label_delai.grid(row=3, sticky=W, padx=5, pady=5)
-        entree_delai_mouvement_automatique.grid(row=3, sticky=E, padx=5, pady=5)
-        cadre_dimensions.grid(row=2, sticky=W)
-        label_dimensions.grid(sticky=W, padx=5, pady=5)
-        label_lignes.grid(row=1, column=0, sticky=W, padx=5, pady=5)
-        entree_nombre_ligne.grid(row=1, column=1, sticky=W, padx=5, pady=5)
-        label_colonnes.grid(row=2, column=0, sticky=W, padx=5, pady=5)
-        entree_nombre_colonne.grid(row=2, column=1, sticky=W, padx=5, pady=5)
-        label_rangees.grid(row=3, column=0, sticky=W, padx=5, pady=5)
-        entree_nombre_rangees.grid(row=3, column=1, sticky=W, padx=5, pady=5)
-        cadre_noms.grid(row=1, sticky=W)
-        label_nom_blanc.grid(row=0, column=0, sticky=W, padx=5, pady=5)
-        entree_nom_blanc.grid(row=0, column=1, padx=5, pady=5)
-        entree_nom_noir.grid(row=1, column=1, padx=5, pady=5)
-        label_nom_noir.grid(row=1, column=0, sticky=W, padx=5, pady=5)
-        cadre_boutons.grid(row=3, sticky=E)
-        ok = lambda: self.fenetre.nouvelle_partie_quitter(self, entree_nombre_ligne, entree_nombre_colonne,
-                                                          entree_nombre_rangees, entree_delai_mouvement_automatique,
-                                                          entree_nom_blanc, entree_nom_noir, fenetre.afficher_sources)
-        bouton_ok = Button(cadre_boutons, text="Nouvelle partie", command=ok)
-        annuler = lambda: self.annuler(self, jouer_contre_ordinateur_avant, afficher_sources_avant,
-                                       afficher_cibles_avant)
-        bouton_annuler = Button(cadre_boutons, text="Annuler", command=annuler)
-        bouton_annuler.grid(row=6, column=2, padx=5, pady=5, sticky=E)
-        bouton_ok.grid(row=6, column=1, pady=8, sticky=E)
+        self.rowconfigure(0, weight=1)
+        self.rowconfigure(2, weight=1)
+        self.rowconfigure(4, weight=1)
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(2, weight=1)
 
-    def annuler(self, fenetre, jouer_contre_ordinateur_avant, afficher_sources_avant, afficher_cibles_avant):
+        cadre_options = Frame(self)
+        cadre_options.grid(row=0, column=0)
+        cadre_boutons = Frame(self)
+        cadre_boutons.grid(row=1, column=0)
+        cadre_grosseur = Frame(cadre_options)
+        cadre_grosseur.grid(row=0, column=0)
+
+        label_grosseur = Label(cadre_grosseur, text="Grosseur de la fenêtre", font=("Arial", 12, "bold"))
+        label_grosseur.grid(row=0, column=0)
+
+        self.entree_grosseur = Listbox(cadre_grosseur, height=3, width=18, yscrollcommand=1, font=("Arial", 13))
+        self.entree_grosseur.insert(0, "Gros")
+        self.entree_grosseur.insert(0, "Moyen")
+        self.entree_grosseur.insert(0, "Petit")
+        self.entree_grosseur.select_set(self.entree_grosseur.get(0, END).index(fenetre.grosseur))
+        self.entree_grosseur.grid(row=1, column=0)
+
+        ok = lambda: self.options_dans_attributs(fenetre)
+        self.ok = Button(cadre_boutons, text="Ok", command=ok, font=("Arial", 12), width=8, bd=2)
+        self.ok.grid(row=6, column=0, padx=10, pady=1)
+
+        annuler = lambda: self.annuler()
+        bouton_annuler = Button(cadre_boutons, text="Annuler", command=annuler, font=("Arial", 12), width=8, bd=2)
+        bouton_annuler.grid(row=6, column=2, padx=5, pady=5, sticky=E)
+
+    def annuler(self):
         """ Annule les changements faits pour l'option de jouer contre l'ordinateur et ferme la fenêtre passée en
             argument.
 
@@ -417,15 +357,13 @@ class Options(Tk):
             jouer_contre_ordinateur_avant: l'état de l'attribut self.jouer_contre_ordinateur avant l'ouverture de la
             fenêtre des options
         """
-        self.fenetre.jouer_contre_ordinateur = jouer_contre_ordinateur_avant
-        self.fenetre.afficher_sources = afficher_sources_avant
-        self.fenetre.afficher_cibles = afficher_cibles_avant
-        fenetre.destroy()
+        self.destroy()
 
-    def options_dans_attributs(self, poste):
+    def options_dans_attributs(self, fenetre):
         """ Change l'attribut self.jouer_contre_ordinateur.
         """
-
+        fenetre.charger_quart(fenetre.quart.nom_quart+'.txt', self.entree_grosseur.get(self.entree_grosseur.curselection()))
+        self.destroy()
 
 class TousLesLogs(Tk):
     """Ouvre une nouvelle fenêtre qui affiche une liste des déplacement effectués jusqu'à maintenant dans la partie.

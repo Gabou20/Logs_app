@@ -62,14 +62,6 @@ class Quart:
 
     def convertir_en_chaine(self):
         """Retourne une chaîne de caractères où chaque case est écrite sur une ligne distincte.
-        Chaque ligne contient l'information suivante (respectez l'ordre et la manière de séparer les éléments):
-        ligne,colonne,couleur,type
-
-        Par exemple, un damier à deux pièces (un pion noir en (1, 2) et une dame blanche en (6, 1)) serait représenté
-        par la chaîne suivante:
-
-        1,2,noir,pion
-        6,1,blanc,dame
 
         Cette méthode pourrait par la suite être réutilisée pour sauvegarder un damier dans un fichier.
 
@@ -77,7 +69,7 @@ class Quart:
             (str): La chaîne de caractères construite.
 
         """
-        chaine = "{},{},{},{}\n".format(self.nb_patrouilleurs, self.couleur_lieutenant,
+        chaine = "{};{};{};{}\n".format(self.nb_patrouilleurs, self.couleur_lieutenant,
                                         self.id_lieutenant.convertir_en_chaine(),
                                         self.dernier_pat_log)
 
@@ -106,11 +98,11 @@ class Quart:
             if information_quart != "":
                 if numero_de_ligne == 0:
                     nb_patrouilleurs, self.couleur_lieutenant, nom_lieutenant, titre_lieutenant, indicatif_lieutenant, \
-                    self.dernier_pat_log = information_quart.split(",")
+                    self.dernier_pat_log = information_quart.split(";")
                     self.nb_patrouilleurs = int(nb_patrouilleurs)
                 elif patrouilleur:
                     if numero_de_ligne == 2:
-                        nom, titre, indicatif, couleur1, couleur2 = information_quart.split(",")
+                        nom, titre, indicatif, couleur1, couleur2 = information_quart.split(";")
                         self.id_patrouilleurs[poste] = \
                             Patrouilleur(Agent(nom, titre, indicatif), poste, [couleur1, couleur2])
                     elif numero_de_ligne != 1:

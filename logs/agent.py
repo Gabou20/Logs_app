@@ -20,7 +20,7 @@ class Agent:
         self.indicatif = indicatif
 
     def convertir_en_chaine(self):
-        chaine = "{},{},{}".format(self.nom, self.titre, self.indicatif)
+        chaine = "{};{};{}".format(self.nom, self.titre, self.indicatif)
 
         return chaine
 
