@@ -10,7 +10,6 @@ Fillion,Agent,35
 Hudon-Richer,Lieutenante,40
 Morel,Sergent,44
 Ouellet,Agente,45
-Edouard,Agente,46
 Houde P.-L.,Agent,74
 Gagnon M.,Agente,75
 Gagnon C.,Agent,99

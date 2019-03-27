@@ -4,7 +4,9 @@ from logs.patrouilleur import Patrouilleur
 from logs.agent import Agent
 from logs.exceptions import PieceInexistante, ErreurDeplacement
 from logs.log import Log
+import ast
 import datetime
+from openpyxl import Workbook
 
 
 class Quart:
@@ -21,8 +23,7 @@ class Quart:
     """
 
     def __init__(self, jour_nuit=None, id_lieutenant=Agent("", "", ""), couleur_lieutenant="chartreuse", nb_patrouilleurs=1, id_204=None, id_205=None, id_206=None, id_207=None):
-        """Constructeur du Damier. Initialise un damier initial de 8 lignes par 8 colonnes.
-
+        """
         Args:
             id_lieutenant
             nb_patrouilleurs (int) : Le nombre de patrouilleurs dans le quart
@@ -30,10 +31,8 @@ class Quart:
             id_205=None (Patrouilleur)
             id_206=None (Patrouilleur)
             id_207=None (Patrouilleur)
-
-        Raises:
-            ValueError: Si le nombre de lignes, de colonnes ou de rangées est invalide.
         """
+
         self.nb_patrouilleurs = nb_patrouilleurs
         self.id_lieutenant = id_lieutenant
         self.id_patrouilleurs = {
@@ -48,31 +47,23 @@ class Quart:
         self.jour_nuit = jour_nuit
 
     def effacer_dernier_log(self):
-        """Vérifie si les coordonnées d'une position sont dans les bornes du damier (entre 0 inclusivement et le nombre
-        de lignes/colonnes, exclusement.
-
-        Args:
-            position (Position): La position à valider.
-
-        Returns:
-            bool: True si la position est dans les bornes, False autrement.
-
-        """
-        for pat in self.dernier_pat_log:
+        for pat in self.dernier_pat_log[0]:
             self.id_patrouilleurs[pat].effacer_dernier_log()
 
     def convertir_en_chaine(self):
-        """Retourne une chaîne de caractères où chaque case est écrite sur une ligne distincte.
-
-        Cette méthode pourrait par la suite être réutilisée pour sauvegarder un damier dans un fichier.
+        """Retourne une chaîne de caractères où chaque log est écrite sur une ligne distincte.
 
         Returns:
             (str): La chaîne de caractères construite.
 
         """
+        liste_logs = []
+        for log in self.dernier_pat_log:
+            liste_logs.append(','.join(log))
+        derniers_logs = '-'.join(liste_logs)
         chaine = "{};{};{};{}\n".format(self.nb_patrouilleurs, self.couleur_lieutenant,
                                         self.id_lieutenant.convertir_en_chaine(),
-                                        self.dernier_pat_log)
+                                        derniers_logs)
 
         for patrouilleur in self.id_patrouilleurs.values():
             if patrouilleur is not None:
@@ -118,19 +109,49 @@ class Quart:
                 self.id_patrouilleurs[pat].position = self.id_patrouilleurs[pat].logs[0]
                 self.id_patrouilleurs[pat].logs.pop(0)
 
+        self.dernier_pat_log = self.dernier_pat_log.split("-")
+        new_list = []
+        for item in self.dernier_pat_log:
+            new_list.append(item.split(","))
+        self.dernier_pat_log = new_list
+
     def sauvegarder(self, nom_fichier):
-        """Sauvegarde une partie dans un fichier. Le fichier contiendra:
-        - Une ligne indiquant la couleur du joueur courant.
-        - Une ligne contenant True ou False, si le joueur courant doit absolument effectuer une prise à son tour.
-        - Une ligne contenant None si self.position_source_forcee est à None, et la position ligne,colonne autrement.
-        - Le reste des lignes correspondent au damier. Voir la méthode convertir_en_chaine du damier pour le format.
-
-        Exemple de contenu de fichier :
-
+        """
         Args:
             nom_fichier (str): Le nom du fichier où sauvegarder.
 
         """
+        nom_fichier
         with open(nom_fichier, "w") as f:
             f.writelines(self.convertir_en_chaine())
         f.close()
+
+    def sauvegarder_excel(self, nom_fichier):
+        wb = Workbook()
+        for pat in self.id_patrouilleurs:
+            if self.id_patrouilleurs[pat] is not None:
+                ws = wb.create_sheet(pat)
+                #ws.title = pat
+                ws['A1'] = pat
+                ws['B1'] = self.id_patrouilleurs[pat].agent.titre
+                ws['C1'] = self.id_patrouilleurs[pat].agent.nom
+                ws['D1'] = self.id_patrouilleurs[pat].agent.indicatif
+
+                ws['A3'] = "Heure début"
+                ws['B3'] = "Heure fin"
+                ws['C3'] = "Terminal ou extérieur"
+                ws['D3'] = "Côté ville ou piste"
+                ws['E3'] = "Log"
+                ws['E3'] = "Note"
+
+                for x in range(0, len(self.id_patrouilleurs[pat].logs)):
+                    logs_reversed = self.id_patrouilleurs[pat].logs[::-1]
+                    ws.cell(row=x+4, column=1, value=logs_reversed[x].heure_debut)
+                    ws.cell(row=x+4, column=2, value=logs_reversed[x].heure_fin)
+                    ws.cell(row=x+4, column=3, value=logs_reversed[x].terminal_exterieur)
+                    ws.cell(row=x+4, column=4, value=logs_reversed[x].cote)
+                    ws.cell(row=x+4, column=5, value=logs_reversed[x].log)
+                    ws.cell(row=x+4, column=6, value=logs_reversed[x].note)
+
+        nom = nom_fichier + ".xlsx"
+        wb.save(nom)

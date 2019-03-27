@@ -7,7 +7,7 @@ from logs.agent import Agent
 from logs.exceptions import ErreurDeplacement, ErreurPositionCible, ErreurPositionSource, PieceInexistante
 from logs.patrouilleur import Patrouilleur
 from logs.quart import Quart
-from interface.fenetres_supplementaires import FinQuart, Options, TousLesLogs, Message, GestionAgents, GestionEquipes, About
+from interface.fenetres_supplementaires import FinQuart, Options, TousLesLogs, Message, GestionAgents, About
 import datetime
 
 
@@ -104,20 +104,12 @@ class Nouveau_quart(Tk):
         self.cadre_nouveau_quart = Frame(self)
         self.liste_agents = {}
         self.charger_agents()
-        self.jour_nuit = None
+        self.jour_nuit = StringVar()
 
         activer_204 = lambda: self.options_dans_attributs("204")
         activer_205 = lambda: self.options_dans_attributs("205")
         activer_206 = lambda: self.options_dans_attributs("206")
         activer_207 = lambda: self.options_dans_attributs("207")
-
-        self.liste_equipes = {
-            "A": {},
-            "B": {},
-            "C": {},
-            "D": {}
-        }
-        self.charger_equipes()
 
         self.cadres_patrouilleurs = {
             "204": CadreNouveauPatrouilleur(0, self.cadre_nouveau_quart, "204", activer_204, self.liste_agents, "jaune"),
@@ -172,39 +164,18 @@ class Nouveau_quart(Tk):
         cadre_options = Frame(self.cadre_nouveau_quart, bd=3, relief="ridge")
         cadre_options.grid(row=0, column=0, columnspan=2)
 
-        self.cadre_equipes = Frame(self.cadre_nouveau_quart, bd=3, relief="ridge")
-        self.cadre_equipes.grid(row=0, column=2, columnspan=2)
-
-        self.cadre_jour_nuit = Frame(self.cadre_equipes, bd=3, relief="ridge")
-        self.cadre_jour_nuit.grid(row=2, column=0, columnspan=2)
-
-        equipeA = lambda: self.charger_equipe("A")
-        equipeB = lambda: self.charger_equipe("B")
-        equipeC = lambda: self.charger_equipe("C")
-        equipeD = lambda: self.charger_equipe("D")
+        self.cadre_jour_nuit = Frame(self.cadre_nouveau_quart, bd=3, relief="ridge")
+        self.cadre_jour_nuit.grid(row=0, column=2, columnspan=2)
 
         bouton_gestion_agents = Button(cadre_options, text="Gestion des agents",
                                        font=("Arial", 13, "bold"),
                                        command=self.gestion_agents)
-        bouton_gestion_equipes = Button(cadre_options, text="Gestion des équipes",
-                                        font=("Arial", 13, "bold"),
-                                        command=self.gestion_equipes)
         bouton_charger_quart = Button(cadre_options, text="Charger un quart",
                                       font=("Arial", 13, "bold"),
                                       command=self.charger_quart)
-        bouton_equipe_a = self.creer_bouton_equipe("Equipe A", equipeA)
-        bouton_equipe_b = self.creer_bouton_equipe("Equipe B", equipeB)
-        bouton_equipe_c = self.creer_bouton_equipe("Equipe C", equipeC)
-        bouton_equipe_d = self.creer_bouton_equipe("Equipe D", equipeD)
 
         bouton_gestion_agents.grid(row=0, column=0, padx=5, pady=5)
-        bouton_gestion_equipes.grid(row=1, column=0, padx=5, pady=5)
         bouton_charger_quart.grid(row=2, column=0, padx=5, pady=5)
-
-        bouton_equipe_a.grid(row=0, column=0, padx=5, pady=5)
-        bouton_equipe_b.grid(row=0, column=1, padx=5, pady=5)
-        bouton_equipe_c.grid(row=1, column=0, padx=5, pady=5)
-        bouton_equipe_d.grid(row=1, column=1, padx=5, pady=5)
 
         bouton_jour = Radiobutton(self.cadre_jour_nuit, selectcolor="Yellow", width=4,
                                                          variable=self.jour_nuit, value="Jour",
@@ -252,51 +223,8 @@ class Nouveau_quart(Tk):
                            font=("Arial", 13, "bold"))
         bouton_ok.grid(padx=5, pady=5, sticky=W)
 
-    def assigner_jour(self, jour):
-        self.jour_nuit = jour
-
-    def creer_bouton_equipe(self, caption, commande):
-        return Button(self.cadre_equipes, text=caption,
-                      font=("Arial", 13, "bold"),
-                      command=commande)
-
-    def charger_equipes(self):
-        with open("equipes.txt", 'r') as fichier:
-            chaine = fichier.read()
-            postes = ["lieutenant", "205"]
-            if chaine != "":
-                equipe_courante = ""
-                for ligne in chaine.split("\n"):
-                    if ligne in ["A", "B", "C", "D"]:
-                        equipe_courante = ligne
-                        poste = 0
-                    elif ligne != "":
-                        nom, titre, indicatif = ligne.split(",")
-                        agent = Agent(nom, titre, indicatif)
-                        self.liste_equipes[equipe_courante][postes[poste]] = agent
-                        poste += 1
-        fichier.close()
-
     def gestion_agents(self):
         GestionAgents(self)
-
-    def gestion_equipes(self):
-        GestionEquipes(self)
-
-    def charger_equipe(self, equipe):
-        lieutenant, a_205 = self.liste_equipes[equipe]["lieutenant"], self.liste_equipes[equipe]["205"]
-
-        index_205 = self.cadres_patrouilleurs["205"].entree_agent.get(0, END).index(a_205.afficher_sans_titre())
-        self.cadres_patrouilleurs["205"].entree_agent.select_clear(0, END)
-        self.cadres_patrouilleurs["205"].entree_agent.select_set(index_205)
-        self.cadres_patrouilleurs["205"].entree_agent.see(index_205)
-        self.cadres_patrouilleurs["205"].bouton.select()
-        self.options_dans_attributs("205")
-
-        index_lieutenant = self.entree_lieutenant.get(0, END).index(lieutenant.afficher_sans_titre())
-        self.entree_lieutenant.select_clear(0, END)
-        self.entree_lieutenant.select_set(index_lieutenant)
-        self.entree_lieutenant.see(index_lieutenant)
 
     def nouvelle_fenetre_quart(self):
         nb_pat = 0
@@ -311,8 +239,7 @@ class Nouveau_quart(Tk):
             lieutenant = self.liste_agents[self.entree_lieutenant.get(self.entree_lieutenant.curselection())]
         except:
             self.afficher_message("Lieutenant sans âme", "Vous devez choisir un agent pour le lieutenant")
-            erreur=True
-
+            erreur = True
 
         for pat in self.patrouilleurs_actifs:
             if self.patrouilleurs_actifs[pat]:
@@ -329,13 +256,14 @@ class Nouveau_quart(Tk):
 
         if nb_pat == 0 and not erreur:
             self.afficher_message("Aucun patrouilleur", "L'aéroport n'est pas très sécuritaire sans aucun patrouilleur!")
-        elif nb_pat != 0:
-            quart = Quart(self.jour_nuit, lieutenant, self.couleurs_possibles[self.valeur_couleur.get()][0],
+        elif not (self.jour_nuit.get() == "Jour" or self.jour_nuit.get() == "Nuit") and not erreur:
+            self.afficher_message("Jour ou nuit?", "Est-ce le matin ou le soir?")
+        elif nb_pat != 0 and not erreur:
+            quart = Quart(self.jour_nuit.get(), lieutenant, self.couleurs_possibles[self.valeur_couleur.get()][0],
                         nb_pat, patrouilleurs["204"], patrouilleurs["205"], patrouilleurs["206"], patrouilleurs["207"])
             Fenetre(quart, "Moyen")
             self.destroy()
-        elif self.jour_nuit is None:
-            self.afficher_message("Nuit et jour", "Sommes nous le jour ou la nuit?")
+
 
     def options_dans_attributs(self, patrouilleur):
         self.patrouilleurs_actifs[patrouilleur] = self.cadres_patrouilleurs[patrouilleur].actif
@@ -352,11 +280,6 @@ class Nouveau_quart(Tk):
         fichier.close()
 
     def afficher_message(self, titre, message):
-        """Affiche un message d'une certaine couleur en-dessous du damier.
-        Arg:
-            message: le message à afficher
-            couleur: la couleur du texte du message
-        """
         Message(titre, message)
 
     def charger_quart(self):
@@ -377,7 +300,7 @@ class Nouveau_quart(Tk):
 
 
 class CadrePatrouilleur(Frame):
-    def __init__(self, colonne, cadre_parent, poste, agent, couleur1, couleur2, grosseurs):
+    def __init__(self, colonne, cadre_parent, poste, agent, couleur1, couleur2, grosseurs, heure_debut):
 
         largeur = grosseurs["Largeur cadre"]
         hauteur = grosseurs["Hauteur cadre"]
@@ -414,9 +337,9 @@ class CadrePatrouilleur(Frame):
             self.cadre.columnconfigure(col, weight=1)
             col += 2
 
-        self.position_actuelle.config(text="Début de quart", bg=couleur2, font=("Arial", police-1, "bold"))
-        self.heure_position.config(bd=0, bg=couleur2, font=("Arial", police-1, "bold"), width=6, justify=CENTER)
-        self.heure_position.insert(END, "00:00")
+        self.position_actuelle.config(text="Début de quart", bg=couleur2, font=("Arial", police-2, "bold"))
+        self.heure_position.config(bd=0, bg=couleur2, font=("Arial", police-2, "bold"), width=6, justify=CENTER)
+        self.heure_position.insert(END, heure_debut)
 
         #Grid objets
         self.cadre.grid(row=4, column=colonne, sticky=NSEW)
@@ -736,7 +659,7 @@ class Fenetre(Tk):
         menu_donnees = Menu(menu_logs, tearoff=0)
         menu_aide = Menu(menu_logs, tearoff=0)
 
-        sauvegarder_quart = lambda: self.sauvegarder_quart(True)
+        sauvegarder_quart = lambda: self.sauvegarder_quart(True, True)
         logs_effectues = lambda: self.nouveau_quart_quitter(self.grosseur)
 
         #Premier onglet
@@ -760,7 +683,7 @@ class Fenetre(Tk):
 
         self.config(menu=menu_logs)
 
-        self.sauvegarder_quart(False)
+        self.sauvegarder_quart(False, False)
 
     #def gerer_logs(self):
 
@@ -796,14 +719,21 @@ class Fenetre(Tk):
         label_lieutenant.grid(row=0, column=1)
         label_agent.grid(row=0, column=3)
 
+        heures_debut = [["18:30", "18:30", "18:45", "19:00"], ["06:30", "06:30", "06:45", "07:00"]]
+
         colonne = 0
         for pat in sorted(self.quart.id_patrouilleurs):
             if self.quart.id_patrouilleurs[pat] is not None:
+                if self.quart.jour_nuit == "Jour":
+                    heure_debut = heures_debut[1][int(pat)-204]
+                else:
+                    heure_debut = heures_debut[0][int(pat) - 204]
+
                 self.cadres_patrouilleurs[pat] = CadrePatrouilleur(colonne, cadre_quart, pat,
                                                                    self.quart.id_patrouilleurs[pat].agent,
                                                                    self.quart.id_patrouilleurs[pat].theme[0],
                                                                    self.quart.id_patrouilleurs[pat].theme[1],
-                                                                   self.grosseurs_ref[self.grosseur])
+                                                                   self.grosseurs_ref[self.grosseur], heure_debut)
                 colonne += 1
 
     def nouveau_quart_quitter(self, grosseur):
@@ -825,16 +755,13 @@ class Fenetre(Tk):
         TousLesLogs()
 
     def annuler_dernier_log(self):
-        """ Déplace la dernière pièce déplacée à sa position d'origine.
-        Si le dernier mouvement était une prise, la pièce prise est redessinée.
-        """
         if self.quart.dernier_pat_log == []:
-            self.afficher_message("Erreur", "Le dernier log a déjà été effacé!")
+            self.afficher_message("Erreur", "Aucun log à effacer")
         else:
             self.quart.effacer_dernier_log()
-            for pat in self.quart.dernier_pat_log:
+            for pat in self.quart.dernier_pat_log[0]:
                 self.retirer_dernier_log(pat)
-            self.quart.dernier_pat_log = []
+            self.quart.dernier_pat_log.pop(0)
 
     def options(self):
         """ Crée la fenêtre d'options et les cadres et boutons appropriés.
@@ -851,9 +778,9 @@ class Fenetre(Tk):
         for pat in patrouilleurs:
             self.quart.id_patrouilleurs[pat].nouveau_log(nouveau_log, True)
             self.afficher_logs(pat)
-        self.quart.dernier_pat_log = patrouilleurs
+        self.quart.dernier_pat_log.insert(0, patrouilleurs)
 
-        self.sauvegarder_quart(False)
+        self.sauvegarder_quart(False, False)
 
     def updater_heures(self):
         for pats in self.quart.id_patrouilleurs:
@@ -869,7 +796,7 @@ class Fenetre(Tk):
     def creer_log_existant(self, patrouilleur, log):
         self.quart.id_patrouilleurs[patrouilleur].nouveau_log(log, False)
         self.afficher_logs(patrouilleur)
-        self.quart.dernier_pat_log = [patrouilleur]
+        #self.quart.dernier_pat_log.insert(0, patrouilleur)
 
     def afficher_logs(self, patrouilleur):
         #On affiche d'abord la position actuelle dans le cadre prévu à cet effet
@@ -935,7 +862,7 @@ class Fenetre(Tk):
                 justify=CENTER,
                 font=("Arial", police-2)))
 
-    def sauvegarder_quart(self, demander_nom_fichier):
+    def sauvegarder_quart(self, demander_nom_fichier, excel):
         """ Ouvre une fenêtre qui demande l'emplacement et le nom désirés de la partie et sauvegarde la partie.
         """
         self.updater_heures()
@@ -945,6 +872,8 @@ class Fenetre(Tk):
             fichier = str(self.quart.nom_quart + ".txt")
         if fichier != "":
             self.quart.sauvegarder(fichier)
+        if excel:
+            self.quart.sauvegarder_excel(fichier[0:-4])
 
     def charger_quart(self, fichier=None, grosseur="Moyen"):
         """ Ouvre une fenêtre qui demande la partie à charger et charge cette partie.
