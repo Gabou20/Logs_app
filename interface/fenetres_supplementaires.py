@@ -1,6 +1,6 @@
 __author__ = 'Gabrielle Martin-Fortier '
 
-from tkinter import Tk, Button, Label, Entry, Frame, Checkbutton, W, E, scrolledtext, Listbox, END, Radiobutton, StringVar
+from tkinter import Tk, Button, Label, Entry, Frame, W, E, scrolledtext, Listbox, END, Radiobutton, StringVar, INSERT
 from logs.patrouilleur import Patrouilleur
 from logs.log import Log
 from random import choice
@@ -369,18 +369,33 @@ class TousLesLogs(Tk):
     """Ouvre une nouvelle fenêtre qui affiche une liste des déplacement effectués jusqu'à maintenant dans la partie.
     """
 
-    def __init__(self, fenetre):
-        """ Constructeur de la classe Deplacements_effectues. Initialise son argument.
-
-        Arg:
-            fenetre (Tk): fenêtre du jeu de dames
-        """
+    def __init__(self, fenetre, patrouilleur):
         super().__init__()
         self.resizable(0, 0)
         self.config(height=10)
-        scroll = scrolledtext.ScrolledText(self, height=20, width=65, wrap='word')
         self.title("Registre des logs du quart")
+        scroll = scrolledtext.ScrolledText(self, height=20, width=65, wrap='word')
+        scroll.grid(row=0, column=0)
 
+        texte = ""
+        logs_reversed = fenetre.quart.id_patrouilleurs[patrouilleur].logs[::-1]
+        for log in logs_reversed:
+            texte += log.heure_debut + " à " + log.heure_fin + " : " + self.afficher_log(log)
+        texte += fenetre.quart.id_patrouilleurs[patrouilleur].position.heure_debut + " : " + \
+                 self.afficher_log(fenetre.quart.id_patrouilleurs[patrouilleur].position)
+        scroll.insert(INSERT, texte)
+
+    def afficher_log(self, log):
+        texte = ""
+        if log.terminal_exterieur == "Exterieur":
+            texte += "Ext. " + self.cote + " : "
+        else:
+            texte += "Terminal : "
+        texte += log.log
+        if log.note != "":
+            texte += " - " + log.note
+
+        return texte + "\n"
 
 class Message(Tk):
     """Ouvre une nouvelle fenêtre qui affiche une liste des déplacement effectués jusqu'à maintenant dans la partie.

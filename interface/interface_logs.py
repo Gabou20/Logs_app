@@ -636,7 +636,7 @@ class Fenetre(Tk):
             #Nouveau_quart()
             #self.destroy()
         self.grosseur = grosseur
-        self.title("Gestion des logs")
+        self.title("Logs des patrouilleurs")
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
         self.resizable(0, 0)
@@ -662,19 +662,25 @@ class Fenetre(Tk):
         menu_quart = Menu(menu_logs, tearoff=0)
 
         sauvegarder_quart = lambda: self.sauvegarder_quart(True)
-        logs_effectues = lambda: self.nouveau_quart_quitter(self.grosseur)
 
         #Premier onglet
         menu_logs.add_cascade(label="Fichier", menu=menu_principal)
         menu_principal.add_command(label="Nouveau quart", command=self.nouveau_quart)
         menu_principal.add_command(label="Sauvegarder", command=sauvegarder_quart)
         menu_principal.add_command(label="Charger un quart", command=self.charger_quart)
+        menu_principal.add_separator()
         menu_principal.add_command(label="Quitter", command=self.quitter)
 
         #Deuxième onglet
         menu_logs.add_cascade(label="Quart", menu=menu_quart)
         menu_quart.add_command(label="Annuler le dernier log", command=self.annuler_dernier_log)
-        menu_quart.add_command(label="Voir tous les logs", command=logs_effectues)
+
+        submenu = Menu(menu_logs, tearoff=0)
+        for pat in sorted(self.quart.id_patrouilleurs):
+            if self.quart.id_patrouilleurs[pat] is not None:
+                submenu.add_command(label=pat, command=lambda: self.tous_logs(pat))
+
+        menu_quart.add_cascade(label="Voir tous les logs", menu=submenu, underline=0)
 
         #Troisième onglet
         menu_logs.add_cascade(label="Options", menu=menu_options)
@@ -687,6 +693,9 @@ class Fenetre(Tk):
         self.config(menu=menu_logs)
 
         self.sauvegarder_quart(False)
+
+    def tous_logs(self, pat):
+        TousLesLogs(self, pat)
 
     def quitter(self):
         Sauvegarde(self)
