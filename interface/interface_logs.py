@@ -9,6 +9,7 @@ from logs.patrouilleur import Patrouilleur
 from logs.quart import Quart
 from interface.fenetres_supplementaires import FinQuart, Options, TousLesLogs, Message, GestionAgents, About
 import datetime
+import os
 
 
 class CadreNouveauPatrouilleur(Frame):
@@ -659,7 +660,7 @@ class Fenetre(Tk):
         menu_donnees = Menu(menu_logs, tearoff=0)
         menu_aide = Menu(menu_logs, tearoff=0)
 
-        sauvegarder_quart = lambda: self.sauvegarder_quart(True, True)
+        sauvegarder_quart = lambda: self.sauvegarder_quart(True)
         logs_effectues = lambda: self.nouveau_quart_quitter(self.grosseur)
 
         #Premier onglet
@@ -683,7 +684,7 @@ class Fenetre(Tk):
 
         self.config(menu=menu_logs)
 
-        self.sauvegarder_quart(False, False)
+        self.sauvegarder_quart(False)
 
     #def gerer_logs(self):
 
@@ -780,7 +781,7 @@ class Fenetre(Tk):
             self.afficher_logs(pat)
         self.quart.dernier_pat_log.insert(0, patrouilleurs)
 
-        self.sauvegarder_quart(False, False)
+        self.sauvegarder_quart(False)
 
     def updater_heures(self):
         for pats in self.quart.id_patrouilleurs:
@@ -862,18 +863,18 @@ class Fenetre(Tk):
                 justify=CENTER,
                 font=("Arial", police-2)))
 
-    def sauvegarder_quart(self, demander_nom_fichier, excel):
+    def sauvegarder_quart(self, excel):
         """ Ouvre une fenêtre qui demande l'emplacement et le nom désirés de la partie et sauvegarde la partie.
         """
         self.updater_heures()
-        if demander_nom_fichier:
-            fichier = filedialog.asksaveasfilename(parent=self, initialdir=self.quart.nom_quart, defaultextension='txt', title='Quart courant')
-        else:
-            fichier = str(self.quart.nom_quart + ".txt")
+        fichier = str(self.quart.nom_quart + ".txt")
         if fichier != "":
             self.quart.sauvegarder(fichier)
         if excel:
-            self.quart.sauvegarder_excel(fichier[0:-4])
+            fichier = filedialog.asksaveasfilename(parent=self, initialdir=os.getcwd() + "/Quarts format Excel/",
+                                                   defaultextension='xlsx', title='Quart courant',
+                                                   initialfile=str(self.quart.nom_quart))
+            self.quart.sauvegarder_excel(fichier)
 
     def charger_quart(self, fichier=None, grosseur="Moyen"):
         """ Ouvre une fenêtre qui demande la partie à charger et charge cette partie.

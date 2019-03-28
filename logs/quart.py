@@ -7,7 +7,8 @@ from logs.log import Log
 import ast
 import datetime
 from openpyxl import Workbook
-
+from openpyxl.styles import Font, Alignment
+import os
 
 class Quart:
     """Quart de travail de la sûreté, contenant des patrouilleurs ainsi que leurs affectations de la journée.
@@ -119,31 +120,43 @@ class Quart:
         """
         Args:
             nom_fichier (str): Le nom du fichier où sauvegarder.
-
         """
-        nom_fichier
+        if not os.path.exists("Quarts format texte"):
+            os.mkdir("Quarts format texte")
+
+        nom_fichier = os.getcwd() + "/Quarts format texte/" + nom_fichier
         with open(nom_fichier, "w") as f:
             f.writelines(self.convertir_en_chaine())
         f.close()
 
+    def cellule_titre(self, ws, ligne, colonne, contenu, fontsize):
+        ws.cell(row=ligne, column=colonne, value=contenu).font = Font(size=fontsize, bold=True)
+        ws.cell(row=ligne, column=colonne).alignment = Alignment(horizontal='center')
+
     def sauvegarder_excel(self, nom_fichier):
         wb = Workbook()
+        sheet = wb.get_sheet_by_name('Sheet')
+        wb.remove_sheet(sheet)
         for pat in self.id_patrouilleurs:
             if self.id_patrouilleurs[pat] is not None:
                 ws = wb.create_sheet(pat)
-                #ws.title = pat
-                ws['A1'] = pat
-                ws['B1'] = self.id_patrouilleurs[pat].agent.titre
-                ws['C1'] = self.id_patrouilleurs[pat].agent.nom
-                ws['D1'] = self.id_patrouilleurs[pat].agent.indicatif
+                columns = ['A', 'B', 'C', 'D', 'E', 'F']
+                for c in columns:
+                    ws.column_dimensions[c].width = 30
 
-                ws['A3'] = "Heure début"
-                ws['B3'] = "Heure fin"
-                ws['C3'] = "Terminal ou extérieur"
-                ws['D3'] = "Côté ville ou piste"
-                ws['E3'] = "Log"
-                ws['E3'] = "Note"
+                self.cellule_titre(ws, 1, 1, int(pat), 20)
+                self.cellule_titre(ws, 1, 2, self.id_patrouilleurs[pat].agent.titre, 20)
+                self.cellule_titre(ws, 1, 3, self.id_patrouilleurs[pat].agent.nom, 20)
+                self.cellule_titre(ws, 1, 4, int(self.id_patrouilleurs[pat].agent.indicatif), 20)
 
+                self.cellule_titre(ws, 3, 1, "Heure début", 14)
+                self.cellule_titre(ws, 3, 2, "Heure fin", 14)
+                self.cellule_titre(ws, 3, 3, "Terminal ou extérieur", 14)
+                self.cellule_titre(ws, 3, 4, "Côté ville ou piste", 14)
+                self.cellule_titre(ws, 3, 5, "Log", 14)
+                self.cellule_titre(ws, 3, 6, "Note", 14)
+
+                self.id_patrouilleurs[pat].logs.insert(0, self.id_patrouilleurs[pat].position)
                 for x in range(0, len(self.id_patrouilleurs[pat].logs)):
                     logs_reversed = self.id_patrouilleurs[pat].logs[::-1]
                     ws.cell(row=x+4, column=1, value=logs_reversed[x].heure_debut)
@@ -153,5 +166,12 @@ class Quart:
                     ws.cell(row=x+4, column=5, value=logs_reversed[x].log)
                     ws.cell(row=x+4, column=6, value=logs_reversed[x].note)
 
-        nom = nom_fichier + ".xlsx"
+        #Ici on place les feuilles de travail dans un ordre croissant selon les postes des patrouilleurs
+        new_order = sorted(wb.sheetnames)
+        new_sheets = []
+        for sheet in new_order:
+            new_sheets.append(wb.get_sheet_by_name(sheet))
+        wb._sheets = new_sheets
+
+        nom = nom_fichier
         wb.save(nom)
