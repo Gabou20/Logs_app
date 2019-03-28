@@ -387,11 +387,6 @@ class Message(Tk):
     """
 
     def __init__(self, titre, message):
-        """ Constructeur de la classe Deplacements_effectues. Initialise son argument.
-
-        Arg:
-            fenetre (Tk): fenêtre du jeu de dames
-        """
         super().__init__()
         self.resizable(0, 0)
         self.title(titre)
@@ -408,6 +403,41 @@ class Message(Tk):
         self.ok = Button(self, text="ok", command=ok, font=("Arial", 15), width=8, bd=2)
         self.ok.grid(row=3, column=1, padx=10, pady=1)
 
+class Sauvegarde(Tk):
+    """Ouvre une nouvelle fenêtre qui affiche une liste des déplacement effectués jusqu'à maintenant dans la partie.
+    """
+
+    def __init__(self, fenetre):
+        """
+        Arg:
+            fenetre (Tk): fenêtre du quart
+        """
+        super().__init__()
+        self.fenetre = fenetre
+        self.title("Quitter")
+        self.resizable(0, 0)
+        self.rowconfigure(0, weight=1)
+        self.rowconfigure(2, weight=1)
+        self.rowconfigure(4, weight=1)
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(2, weight=1)
+
+        self.message = Label(self, text="Voulez-vous sauvegarder?", font=("Arial", 14))
+        self.message.grid(row=1, column=0, padx=10, pady=10, columnspan=2)
+
+        self.oui = Button(self, text="Oui", command=self.oui, font=("Arial", 15), width=8, bd=2)
+        self.oui.grid(row=3, column=0, padx=10, pady=1)
+
+        self.non = Button(self, text="Non", command=self.non, font=("Arial", 15), width=8, bd=2)
+        self.non.grid(row=3, column=1, padx=10, pady=1)
+
+    def oui(self):
+        self.fenetre.sauvegarder_quart(True)
+        self.fenetre.quit()
+
+    def non(self):
+        self.fenetre.quit()
+        self.destroy()
 
 class About(Tk):
     """Ouvre une nouvelle fenêtre qui affiche le fonctionnement général du programme.

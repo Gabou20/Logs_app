@@ -7,7 +7,7 @@ from logs.agent import Agent
 from logs.exceptions import ErreurDeplacement, ErreurPositionCible, ErreurPositionSource, PieceInexistante
 from logs.patrouilleur import Patrouilleur
 from logs.quart import Quart
-from interface.fenetres_supplementaires import FinQuart, Options, TousLesLogs, Message, GestionAgents, About
+from interface.fenetres_supplementaires import Options, TousLesLogs, Message, GestionAgents, About, Sauvegarde
 import datetime
 import os
 
@@ -657,28 +657,30 @@ class Fenetre(Tk):
         # On crée le menu
         menu_logs = Menu(self)
         menu_principal = Menu(menu_logs, tearoff=0)
-        menu_donnees = Menu(menu_logs, tearoff=0)
+        menu_options = Menu(menu_logs, tearoff=0)
         menu_aide = Menu(menu_logs, tearoff=0)
+        menu_quart = Menu(menu_logs, tearoff=0)
 
         sauvegarder_quart = lambda: self.sauvegarder_quart(True)
         logs_effectues = lambda: self.nouveau_quart_quitter(self.grosseur)
 
         #Premier onglet
-        menu_logs.add_cascade(label="Quart", menu=menu_principal)
+        menu_logs.add_cascade(label="Fichier", menu=menu_principal)
         menu_principal.add_command(label="Nouveau quart", command=self.nouveau_quart)
-        menu_principal.add_command(label="Sauvegarder le quart", command=sauvegarder_quart)
+        menu_principal.add_command(label="Sauvegarder", command=sauvegarder_quart)
         menu_principal.add_command(label="Charger un quart", command=self.charger_quart)
-        menu_principal.add_command(label="Annuler le dernier log", command=self.annuler_dernier_log)
-        menu_principal.add_command(label="Voir tous les logs", command=logs_effectues)
-        menu_principal.add_command(label="Options", command=self.options)
-        menu_principal.add_command(label="Quitter", command=self.quit)
+        menu_principal.add_command(label="Quitter", command=self.quitter)
 
         #Deuxième onglet
-        #menu_donnees.add_command(label="Gestion des agents", command=self.gerer_agents)
-        #menu_donnees.add_command(label="Gestion des logs", command=self.gerer_logs)
-        menu_logs.add_cascade(label="Gestion des données", menu=menu_donnees)
+        menu_logs.add_cascade(label="Quart", menu=menu_quart)
+        menu_quart.add_command(label="Annuler le dernier log", command=self.annuler_dernier_log)
+        menu_quart.add_command(label="Voir tous les logs", command=logs_effectues)
 
-        #Troisieme onglet
+        #Troisième onglet
+        menu_logs.add_cascade(label="Options", menu=menu_options)
+        menu_options.add_command(label="Grosseur de la fenêtre", command=self.options)
+
+        #Quatrième onglet
         menu_logs.add_cascade(label="Aide", menu=menu_aide)
         menu_aide.add_command(label="Fonctionnement", command=self.aide)
 
@@ -686,7 +688,8 @@ class Fenetre(Tk):
 
         self.sauvegarder_quart(False)
 
-    #def gerer_logs(self):
+    def quitter(self):
+        Sauvegarde(self)
 
     def aide(self):
         About()
@@ -874,7 +877,8 @@ class Fenetre(Tk):
             fichier = filedialog.asksaveasfilename(parent=self, initialdir=os.getcwd() + "/Quarts format Excel/",
                                                    defaultextension='xlsx', title='Quart courant',
                                                    initialfile=str(self.quart.nom_quart))
-            self.quart.sauvegarder_excel(fichier)
+            if fichier != "":
+                self.quart.sauvegarder_excel(fichier)
 
     def charger_quart(self, fichier=None, grosseur="Moyen"):
         """ Ouvre une fenêtre qui demande la partie à charger et charge cette partie.
