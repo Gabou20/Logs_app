@@ -362,7 +362,7 @@ class Options(Tk):
     def options_dans_attributs(self, fenetre):
         """ Change l'attribut self.jouer_contre_ordinateur.
         """
-        fenetre.charger_quart(fenetre.quart.nom_quart+'.txt', self.entree_grosseur.get(self.entree_grosseur.curselection()))
+        fenetre.charger_quart(os.getcwd() + "/Quarts format texte/" + fenetre.quart.nom_quart+'.txt', self.entree_grosseur.get(self.entree_grosseur.curselection()))
         self.destroy()
 
 class TousLesLogs(Tk):

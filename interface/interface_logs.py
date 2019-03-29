@@ -675,10 +675,16 @@ class Fenetre(Tk):
         menu_logs.add_cascade(label="Quart", menu=menu_quart)
         menu_quart.add_command(label="Annuler le dernier log", command=self.annuler_dernier_log)
 
+        commandes = {"204" : lambda: self.tous_logs("204"),
+                     "205" : lambda: self.tous_logs("205"),
+                     "206": lambda: self.tous_logs("206"),
+                     "207": lambda: self.tous_logs("207")
+                     }
+
         submenu = Menu(menu_logs, tearoff=0)
         for pat in sorted(self.quart.id_patrouilleurs):
             if self.quart.id_patrouilleurs[pat] is not None:
-                submenu.add_command(label=pat, command=lambda: self.tous_logs(pat))
+                submenu.add_command(label=pat, command=commandes[pat])
 
         menu_quart.add_cascade(label="Voir tous les logs", menu=submenu, underline=0)
 
